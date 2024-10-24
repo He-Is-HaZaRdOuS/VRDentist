@@ -16,7 +16,7 @@ public class Destructible : MonoBehaviour
     [SerializeField] private Vector3Int size = new(32, 32, 32);
 
     [SerializeField] private ComputeShader cubeMarcher = null;
-    [SerializeField, Range(1, 8)] private int scale = 3;
+    [SerializeField, Range(-2, 8)] private int scale = 3;
     [SerializeField] private float SurfaceLevel = 0f;
     private ComputeBuffer voxelBuffer; // GPU
     private MeshBuilder builder;
@@ -28,8 +28,7 @@ public class Destructible : MonoBehaviour
         voxelBuffer.SetData(voxelData);
         cubeMarcher.SetBuffer(2, "Voxels", voxelBuffer);
         cubeMarcher.SetBuffer(3, "Voxels", voxelBuffer);
-        builder = new MeshBuilder(size, 4 * size.x * size.y * size.z, cubeMarcher);
-
+        builder = new MeshBuilder(size, 1000000, cubeMarcher);
         BuildMesh();
     }
 

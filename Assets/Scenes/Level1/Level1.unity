@@ -223,6 +223,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 4486378112192057284, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4486378112192057284, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4486378112192057284, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: m_Materials.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -244,19 +252,19 @@ PrefabInstance:
       objectReference: {fileID: 1973929025}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: scale
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: size.x
-      value: 128
+      value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: size.y
-      value: 128
+      value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: size.z
-      value: 128
+      value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: capsuleTool
@@ -328,7 +336,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mesh: {fileID: 9078221125172078032, guid: 70f5acbd8fd36254f820376388e40791, type: 3}
-  resolution: 600
+  resolution: 512
+  enableSmoothing: 1
+  smoothingLevel: 3
 --- !u!1 &795005092
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,12 +448,12 @@ Light:
   m_GameObject: {fileID: 1364829251}
   m_Enabled: 1
   serializedVersion: 10
-  m_Type: 2
+  m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 100
-  m_SpotAngle: 45
+  m_SpotAngle: 179
   m_InnerSpotAngle: 1
   m_CookieSize: 10
   m_Shadows:

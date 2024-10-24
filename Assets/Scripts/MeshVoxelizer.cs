@@ -6,6 +6,8 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
 {
     [SerializeField] private Mesh mesh;
     [SerializeField] private int resolution = 256;
+    [SerializeField] private bool enableSmoothing = false;
+    [SerializeField, Range(1, 10)] private int smoothingLevel = 1;
 
     public float[,,] GetVoxelData(Vector3Int gridSize)
     {
@@ -85,6 +87,9 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
         mesh.RecalculateBounds();
 
         var bounds = mesh.bounds;
+        var normGrid = new Vector3(gridSize.x, gridSize.y, gridSize.z).normalized;
+        var normBound = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z).normalized;
+        bounds.Expand(new Vector3(normGrid.x / normBound.x, normGrid.y / normBound.y, normGrid.z / normBound.z));
         float maxLength = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
         var unit = maxLength / resolution;
         var hunit = unit * 0.5f;
@@ -261,6 +266,7 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
                 }
             }
         }
+        if (!enableSmoothing) return voxels;
 
         float[,,] smoothVoxels = new float[gridSize.x, gridSize.y, gridSize.z];
         for (int x = 0; x < gridSize.x; x++)
@@ -268,6 +274,24 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
                 for (int z = 0; z < gridSize.z; z++)
                     smoothVoxels[x, y, z] = -1000f;
 
+        for (int i = 0; i < smoothingLevel; i++)
+        {
+            if (i % 2 == 0)
+            {
+                ApplySmoothing(ref voxels, ref smoothVoxels, gridSize);
+            }
+            else
+            {
+                ApplySmoothing(ref smoothVoxels, ref voxels, gridSize);
+            }
+
+        }
+
+        return smoothingLevel % 2 == 0 ? smoothVoxels : voxels;
+    }
+
+    private static void ApplySmoothing(ref float[,,] source, ref float[,,] dest, Vector3Int gridSize)
+    {
         for (int x = 1; x < gridSize.x - 1; x++)
         {
             for (int y = 1; y < gridSize.y - 1; y++)
@@ -278,13 +302,14 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
                     for (int i = -1; i < 2; i++)
                         for (int j = -1; j < 2; j++)
                             for (int k = -1; k < 2; k++)
-                                sum += voxels[x + i, y + j, z + k];
-                    smoothVoxels[x, y, z] = sum / 27f;
+                                if (i == 0 || j == 0 || k == 0)
+                                    sum += source[x + i, y + j, z + k] * 2;
+                                else
+                                    sum += source[x + i, y + j, z + k];
+                    dest[x, y, z] = sum / 54f;
                 }
             }
         }
-
-        return smoothVoxels;
     }
 
     public static bool Intersects(Triangle tri, Bounds aabb)
