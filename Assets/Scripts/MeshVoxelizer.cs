@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
+public class MeshVoxelizer : MonoBehaviour
 {
     [SerializeField] private Mesh mesh;
     [SerializeField] private int resolution = 256;
@@ -11,7 +11,9 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
 
     public float[,,] GetVoxelData(Vector3Int gridSize)
     {
-        return Voxelize(mesh, gridSize);
+        if (enableSmoothing)
+            return SmoothVoxelize(mesh, gridSize, resolution, smoothingLevel);
+        return Voxelize(mesh, gridSize, resolution);
     }
 
 
@@ -82,7 +84,7 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
     }
 
     // http://blog.wolfire.com/2009/11/Triangle-mesh-voxelization
-    public float[,,] Voxelize(Mesh mesh, Vector3Int gridSize)
+    public static float[,,] Voxelize(Mesh mesh, Vector3Int gridSize, float resolution)
     {
         mesh.RecalculateBounds();
 
@@ -266,8 +268,12 @@ public class MeshVoxelizer : MonoBehaviour, IVoxelDataProvider
                 }
             }
         }
-        if (!enableSmoothing) return voxels;
+        return voxels;
+    }
 
+    public static float[,,] SmoothVoxelize(Mesh mesh, Vector3Int gridSize, int resolution, int smoothingLevel)
+    {
+        float[,,] voxels = Voxelize(mesh, gridSize, resolution);
         float[,,] smoothVoxels = new float[gridSize.x, gridSize.y, gridSize.z];
         for (int x = 0; x < gridSize.x; x++)
             for (int y = 0; y < gridSize.y; y++)

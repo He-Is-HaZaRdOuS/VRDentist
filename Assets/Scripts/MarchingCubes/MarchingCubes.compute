@@ -1,21 +1,32 @@
-#pragma kernel MeshReconstruction
-#pragma kernel ClearUnused
-#pragma kernel Carve
-#pragma kernel CarveCapsule
+#pragma kernel MeshReconstruction // 0
+#pragma kernel ClearUnused // 1
+#pragma kernel Carve // 2
+#pragma kernel CarveCapsule // 3
 
 // Workaround for the absence of sizeof operator in HLSL
 #define SIZEOF_UINT 4
 #define SIZEOF_FLOAT3 12
 
-// Parameters
-uint3 Dims;
+// Object parameters
+uint3 Dims; // number of voxels
+float3 DestructiblePosition; // global position of the [0,0,0]'th voxel
+
+RWStructuredBuffer<float> Voxels;
+RWStructuredBuffer<float> VoxelToughness;
+
+// Marching Cubes Parameters
 uint MaxTriangle;
 float Scale;
 float Isovalue;
-float3 ToolPosition;
-float ToolRange;
-float3 DestructiblePosition;
+StructuredBuffer<uint2> TriangleTable;
+RWByteAddressBuffer VertexBuffer;
+RWByteAddressBuffer IndexBuffer;
+RWStructuredBuffer<uint> Counter; // number of triangles
 
+// Carving tool parameters
+float ToolPower;
+float3 ToolPosition; // Sphere tip center
+float ToolRange; // Sphere tip radius
 float3 capsuleToolA; // tip
 float3 capsuleToolB; // bottom
 float capsuleToolRange; // radius
@@ -26,23 +37,11 @@ float3 TransformPoint(float3 p)
     return (p + 0.5 - Dims / 2) * Scale;
 }
 
-//
-// "Triangle table" that contains triangle lists for each cube configuration
-//
-
-StructuredBuffer<uint2> TriangleTable;
-
 uint EdgeIndexFromTriangleTable(uint2 data, uint index)
 {
     return 0xfu & (index < 8 ? data.x >> ((index + 0) * 4) :
                                data.y >> ((index - 8) * 4));
 }
-
-//
-// Input voxels
-//
-
-RWStructuredBuffer<float> Voxels;
 
 float GetVoxelValue(uint x, uint y, uint z)
 {
@@ -54,7 +53,11 @@ void SetVoxelValue(uint x, uint y, uint z, float value)
     Voxels[x + Dims.x * (y + Dims.y * z)] = value;
 }
 
-// Voxel value with calculated gradient
+float GetVoxelToughness(uint x, uint y, uint z)
+{
+    return VoxelToughness[x + Dims.x * (y + Dims.y * z)];
+}
+
 float4 VoxelValueWithGradient(uint3 i)
 {
     uint3 i_n = max(i, 1) - 1;
@@ -68,14 +71,6 @@ float4 VoxelValueWithGradient(uint3 i)
     float v_pz = GetVoxelValue(i.x, i.y, i_p.z);
     return float4(v_px - v_nx, v_py - v_ny, v_pz - v_nz, v);
 }
-
-//
-// Output buffer and counter
-//
-
-RWByteAddressBuffer VertexBuffer;
-RWByteAddressBuffer IndexBuffer;
-RWStructuredBuffer<uint> Counter; // used only for counting
 
 // Vertex buffer accessor
 void WriteVertex(uint offset, float3 p, float3 n)
@@ -95,10 +90,8 @@ void WriteIndices(uint offset, uint3 indices)
 //
 // Cube geometry/topology
 //
-
 // This must match one defined in Paul Bourke's article:
 // http://paulbourke.net/geometry/polygonise/
-
 uint3 CubeVertex(uint index)
 {
     bool x = index & 1;
@@ -117,10 +110,7 @@ uint2 EdgeVertexPair(uint index)
     return uint2(v1, v2);
 }
 
-//
 // Marching cube mesh reconstruction kernel
-//
-
 [numthreads(4, 4, 4)]
 void MeshReconstruction(uint3 id : SV_DispatchThreadID)
 {
@@ -178,10 +168,7 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
     }
 }
 
-//
 // Cleanup kernel that clears the unused area of the buffers
-//
-
 [numthreads(64, 1, 1)]
 void ClearUnused(uint id : SV_DispatchThreadID)
 {
@@ -197,8 +184,7 @@ void ClearUnused(uint id : SV_DispatchThreadID)
     }
 }
 
-
-
+// Kernel for carving the object with sphere tip
 [numthreads(4, 4, 4)]
 void Carve(uint3 id : SV_DispatchThreadID)
 {
@@ -211,10 +197,14 @@ void Carve(uint3 id : SV_DispatchThreadID)
 
     // Check if voxel is inside the carving tool's range
     if (length(ToolPosition - voxelPos) < ToolRange * ToolRange) {
-        SetVoxelValue(id.x, id.y, id.z, -1);
+        float voxelVal = GetVoxelValue(id.x, id.y, id.z);
+        // if(voxelVal < -1.0) return;
+        float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
+        SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
 }
 
+// Kernel for carving the object with capsule tip
 [numthreads(4, 4, 4)]
 void CarveCapsule(uint3 id : SV_DispatchThreadID)
 {
@@ -230,6 +220,9 @@ void CarveCapsule(uint3 id : SV_DispatchThreadID)
     float h = clamp(dot(pa,ba)/dot(ba,ba), 0.0, 1.0);
     // Check if voxel is inside the carving tool's range
     if (length(pa - ba*h) < capsuleToolRange * capsuleToolRange) {
-        SetVoxelValue(id.x, id.y, id.z, -1);
+        float voxelVal = GetVoxelValue(id.x, id.y, id.z);
+        // if(voxelVal < -1.0) return;
+        float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
+        SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
 }
