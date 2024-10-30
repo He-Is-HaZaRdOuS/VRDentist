@@ -114,7 +114,6 @@ public class Tooth : MonoBehaviour
         computeShader.DispatchThreads(3, size.x, size.y, size.z);
     }
 
-
     #region Input classes
     private enum AeratorType
     {
