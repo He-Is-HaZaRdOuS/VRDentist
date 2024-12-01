@@ -103,11 +103,25 @@ public class Tooth : MonoBehaviour
     {
         float _scale = (float)(Math.Pow(2, scale) / 256);
         var tp = aerator.tool.transform.position;
+        var ts = aerator.tool.transform.localScale;
         var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * _scale;
+        // var topObj = GameObject.Find("top").transform.position;
+        // var bottomObj = GameObject.Find("bottom").transform.position;
+
+        // Apply local offsets for top and bottom tips, boost the Y value inversely proportional to the tool's scale
+        Vector3 localTopTip = new Vector3(0, 0.03f / ts.x, 0);  // Offset upward
+        Vector3 localBottomTip = new Vector3(0, -0.03f / ts.x, 0);  // Offset downward
+
+        // Convert the adjusted local positions back to world space
+        Vector3 topTip = aerator.tool.transform.TransformPoint(localTopTip);
+        Vector3 bottomTip = aerator.tool.transform.TransformPoint(localBottomTip);
+
+        Debug.Log($"TopTip: {topTip}, BottomTip: {bottomTip}, Capsule Rotation: {transform.rotation}");
+
         computeShader.SetFloat("ToolPower", aerator.power);
-        computeShader.SetFloats("capsuleToolA", tp.x, tp.y + 0.0625f, tp.z);
-        computeShader.SetFloats("capsuleToolB", tp.x, tp.y - 0.0625f, tp.z);
-        computeShader.SetFloat("capsuleToolRange", 0.125f);
+        computeShader.SetFloats("capsuleToolA", topTip.x, topTip.y, topTip.z);
+        computeShader.SetFloats("capsuleToolB", bottomTip.x, bottomTip.y, bottomTip.z);
+        computeShader.SetFloat("capsuleToolRange", 0.1f); // used to be 0.125f
 
         computeShader.SetFloat("Scale", _scale);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);

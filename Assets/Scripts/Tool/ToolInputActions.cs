@@ -49,7 +49,7 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""YMovement"",
                     ""type"": ""Value"",
                     ""id"": ""2d5ff221-5245-4877-a5e6-4c3fff09375b"",
-                    ""expectedControlType"": ""Dpad"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
@@ -62,15 +62,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""kb"",
-                    ""type"": ""Button"",
-                    ""id"": ""ae425649-b3b7-4061-93c2-eceb7d8bac7e"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -97,15 +88,59 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": """",
-                    ""id"": ""e12ffff5-76ce-4fe2-acf1-071bc9b9c540"",
-                    ""path"": ""<Gamepad>/dpad"",
+                    ""name"": ""2D Vector"",
+                    ""id"": ""eb27bc62-8d09-4e70-8930-79e2fa1e006b"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""YMovement"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""9fca9ba3-041e-4cb7-9331-753f8ec27e58"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""YMovement"",
                     ""isComposite"": false,
-                    ""isPartOfComposite"": false
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""4a94937f-0ca7-437d-acfd-5eca5dda0470"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""YMovement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""d29d527d-3599-4871-965e-f5386a509b9c"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""YMovement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""b71eac27-bfba-46b2-9910-e6429ebc5add"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""YMovement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 },
                 {
                     ""name"": """",
@@ -115,17 +150,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""ToolRotationSpeed"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""8e538031-cb64-4699-8150-9ccd85b96eeb"",
-                    ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""kb"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -140,7 +164,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
         m_GamepadMap_XZMovement = m_GamepadMap.FindAction("XZMovement", throwIfNotFound: true);
         m_GamepadMap_YMovement = m_GamepadMap.FindAction("YMovement", throwIfNotFound: true);
         m_GamepadMap_ToolRotationSpeed = m_GamepadMap.FindAction("ToolRotationSpeed", throwIfNotFound: true);
-        m_GamepadMap_kb = m_GamepadMap.FindAction("kb", throwIfNotFound: true);
     }
 
     ~@ToolInputActions()
@@ -211,7 +234,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_GamepadMap_XZMovement;
     private readonly InputAction m_GamepadMap_YMovement;
     private readonly InputAction m_GamepadMap_ToolRotationSpeed;
-    private readonly InputAction m_GamepadMap_kb;
     public struct GamepadMapActions
     {
         private @ToolInputActions m_Wrapper;
@@ -220,7 +242,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
         public InputAction @XZMovement => m_Wrapper.m_GamepadMap_XZMovement;
         public InputAction @YMovement => m_Wrapper.m_GamepadMap_YMovement;
         public InputAction @ToolRotationSpeed => m_Wrapper.m_GamepadMap_ToolRotationSpeed;
-        public InputAction @kb => m_Wrapper.m_GamepadMap_kb;
         public InputActionMap Get() { return m_Wrapper.m_GamepadMap; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -242,9 +263,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
             @ToolRotationSpeed.started += instance.OnToolRotationSpeed;
             @ToolRotationSpeed.performed += instance.OnToolRotationSpeed;
             @ToolRotationSpeed.canceled += instance.OnToolRotationSpeed;
-            @kb.started += instance.OnKb;
-            @kb.performed += instance.OnKb;
-            @kb.canceled += instance.OnKb;
         }
 
         private void UnregisterCallbacks(IGamepadMapActions instance)
@@ -261,9 +279,6 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
             @ToolRotationSpeed.started -= instance.OnToolRotationSpeed;
             @ToolRotationSpeed.performed -= instance.OnToolRotationSpeed;
             @ToolRotationSpeed.canceled -= instance.OnToolRotationSpeed;
-            @kb.started -= instance.OnKb;
-            @kb.performed -= instance.OnKb;
-            @kb.canceled -= instance.OnKb;
         }
 
         public void RemoveCallbacks(IGamepadMapActions instance)
@@ -287,6 +302,5 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
         void OnXZMovement(InputAction.CallbackContext context);
         void OnYMovement(InputAction.CallbackContext context);
         void OnToolRotationSpeed(InputAction.CallbackContext context);
-        void OnKb(InputAction.CallbackContext context);
     }
 }
