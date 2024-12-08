@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MarchingCubes;
+using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -11,13 +12,17 @@ public class Tooth : MonoBehaviour
     [SerializeField] private List<Layer> layers;
     [SerializeField] private List<Aerator> aerators;
     [SerializeField] private Vector3Int size = new(32, 32, 32);
-
     [SerializeField, Range(-2, 8)] private int scale = 3;
+    [SerializeField] GameObject debugCube;
     private float SurfaceLevel = 0f;
     private ComputeBuffer voxelBuffer; // GPU
     private ComputeBuffer voxelToughnessBuffer; // GPU
+    private ComputeBuffer collisionInfoBuffer; // GPU
+    private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
 
+
+    private float VoxelSize => (float)(Math.Pow(2, scale) / 256);
 
     public void Start()
     {
@@ -43,15 +48,20 @@ public class Tooth : MonoBehaviour
         if (!hasRenderLayer) throw new Exception("Render layer not selected");
 
         voxelBuffer = new ComputeBuffer(size.x * size.y * size.z, sizeof(float));
-        voxelBuffer.SetData(voxelData);
-        // TODO: FIXME
+        collisionInfoBuffer = new ComputeBuffer(size.x * size.y * size.z, sizeof(float));
         voxelToughnessBuffer = new ComputeBuffer(size.x * size.y * size.z, sizeof(float));
+
+        voxelBuffer.SetData(voxelData);
         voxelToughnessBuffer.SetData(voxelToughnessData);
-        // !TODO
+
+        computeShader.SetBuffer(1, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(2, "Voxels", voxelBuffer);
+        computeShader.SetBuffer(2, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(2, "VoxelToughness", voxelToughnessBuffer);
         computeShader.SetBuffer(3, "Voxels", voxelBuffer);
+        computeShader.SetBuffer(3, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(3, "VoxelToughness", voxelToughnessBuffer);
+
         builder = new MeshBuilder(size, 1000000, computeShader);
         BuildMesh();
     }
@@ -62,9 +72,14 @@ public class Tooth : MonoBehaviour
         {
             switch (aerator.type)
             {
-
                 case AeratorType.Sphere:
                     CarveSphere(aerator);
+                    if (debugCube != null)
+                    {
+                        var index = GlobalPositionToVoxelIndex(aerator.tool.transform.position);
+                        debugCube.transform.position = transform.position + (new Vector3(0, 0, 0) + index) * VoxelSize;
+                        debugCube.transform.localScale = new(VoxelSize, VoxelSize, VoxelSize);
+                    }
                     break;
                 case AeratorType.Capsule:
                     CarveCapsule(aerator);
@@ -76,7 +91,7 @@ public class Tooth : MonoBehaviour
 
     private void BuildMesh()
     {
-        builder.BuildIsosurface(voxelBuffer, SurfaceLevel, (float)(Math.Pow(2, scale) / 256));
+        builder.BuildIsosurface(voxelBuffer, SurfaceLevel, VoxelSize);
         GetComponent<MeshFilter>().sharedMesh = builder.Mesh;
     }
 
@@ -85,26 +100,50 @@ public class Tooth : MonoBehaviour
         builder.Dispose();
         voxelBuffer.Dispose();
         voxelToughnessBuffer.Dispose();
+        collisionInfoBuffer.Dispose();
     }
 
     private void CarveSphere(Aerator aerator)
     {
-        float _scale = (float)(Math.Pow(2, scale) / 256);
         var tp = aerator.tool.transform.position;
-        var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * _scale;
+        var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * VoxelSize;
         computeShader.SetFloats("ToolPosition", tp.x, tp.y, tp.z);
         computeShader.SetFloat("ToolRange", 0.125f);
-        computeShader.SetFloat("Scale", _scale);
+        computeShader.SetFloat("Scale", VoxelSize);
         computeShader.SetFloat("ToolPower", aerator.power);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(2, size.x, size.y, size.z);
+
+        // TODO: check neighboring voxels
+        // TODO: move this code to its own function
+        // TODO: do not run this code in CarveSphere
+        var aeratorCollided = false;
+        // var voxelIndex = GlobalPositionToVoxelIndex(tp);
+        // var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
+        // if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
+        // {
+        //     Debug.Log("INDEX: " + flattenedIndex);
+        //     collisionInfoBuffer.GetData(readBuffer, 0, flattenedIndex, 1);
+        //     Debug.Log("VALUE: " + readBuffer[0]);
+        //     if (readBuffer[0] > 0) aeratorCollided = true;
+        // }
+        collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
+        if (readBuffer[0] > 0) aeratorCollided = true;
+        if (aeratorCollided)
+        {
+            debugCube.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0, 255, 0, 128));
+        }
+        else
+        {
+            debugCube.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(255, 0, 0, 128));
+        }
     }
+
     private void CarveCapsule(Aerator aerator)
     {
-        float _scale = (float)(Math.Pow(2, scale) / 256);
         var tp = aerator.tool.transform.position;
         var ts = aerator.tool.transform.localScale;
-        var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * _scale;
+        var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * VoxelSize;
         // var topObj = GameObject.Find("top").transform.position;
         // var bottomObj = GameObject.Find("bottom").transform.position;
 
@@ -123,9 +162,22 @@ public class Tooth : MonoBehaviour
         computeShader.SetFloats("capsuleToolB", bottomTip.x, bottomTip.y, bottomTip.z);
         computeShader.SetFloat("capsuleToolRange", 0.1f); // used to be 0.125f
 
-        computeShader.SetFloat("Scale", _scale);
+        computeShader.SetFloat("Scale", VoxelSize);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(3, size.x, size.y, size.z);
+    }
+
+    private Vector3Int GlobalPositionToVoxelIndex(Vector3 position)
+    {
+        Vector3 localPosition = position - transform.position;
+        Vector3Int index = new(
+            (int)Math.Round(localPosition.x / VoxelSize),
+            (int)Math.Round(localPosition.y / VoxelSize),
+            (int)Math.Round(localPosition.z / VoxelSize)
+            );
+
+        index.Clamp(new(0, 0, 0), size);
+        return index;
     }
 
     #region Input classes

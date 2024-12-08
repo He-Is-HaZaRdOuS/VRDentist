@@ -13,6 +13,7 @@ float3 DestructiblePosition; // global position of the [0,0,0]'th voxel
 
 RWStructuredBuffer<float> Voxels;
 RWStructuredBuffer<float> VoxelToughness;
+RWStructuredBuffer<float> CollisionInfo;
 
 // Marching Cubes Parameters
 uint MaxTriangle;
@@ -172,6 +173,8 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
 [numthreads(64, 1, 1)]
 void ClearUnused(uint id : SV_DispatchThreadID)
 {
+    // Set collision info to 'no collision'
+    CollisionInfo[0] = 0;
     while (true)
     {
         uint count = Counter.IncrementCounter();
@@ -198,7 +201,8 @@ void Carve(uint3 id : SV_DispatchThreadID)
     // Check if voxel is inside the carving tool's range
     if (length(ToolPosition - voxelPos) < ToolRange * ToolRange) {
         float voxelVal = GetVoxelValue(id.x, id.y, id.z);
-        // if(voxelVal < -1.0) return;
+        if(voxelVal > 0)
+            CollisionInfo[0] = 1.0;
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
