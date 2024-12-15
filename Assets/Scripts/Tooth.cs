@@ -13,6 +13,8 @@ public class Tooth : MonoBehaviour
     [SerializeField] private Vector3Int size = new(32, 32, 32);
     [SerializeField, Range(-2, 8)] private int scale = 3;
     [SerializeField] GameObject debugCube;
+    public float lowFreq = 0.0f;
+    public float highFreq = 0.0f;
     private float SurfaceLevel = 0f;
     private ComputeBuffer voxelBuffer; // GPU
     private ComputeBuffer voxelToughnessBuffer; // GPU
@@ -69,10 +71,11 @@ public class Tooth : MonoBehaviour
     {
         foreach (var aerator in aerators)
         {
+            bool aeratorCollided = false;
             switch (aerator.type)
             {
                 case AeratorType.Sphere:
-                    CarveSphere(aerator);
+                    CarveSphere(aerator, ref aeratorCollided);
                     if (debugCube != null)
                     {
                         var index = GlobalPositionToVoxelIndex(aerator.tool.transform.position);
@@ -81,8 +84,13 @@ public class Tooth : MonoBehaviour
                     }
                     break;
                 case AeratorType.Capsule:
-                    CarveCapsule(aerator);
+                    CarveCapsule(aerator, ref aeratorCollided);
                     break;
+            }
+            if (aeratorCollided)
+            {
+                Debug.Log("Collided");
+                RumbleManager.instance.RumblePulse(lowFreq, highFreq, 0.2f);
             }
         }
         BuildMesh();
@@ -102,7 +110,7 @@ public class Tooth : MonoBehaviour
         collisionInfoBuffer.Dispose();
     }
 
-    private void CarveSphere(Aerator aerator)
+    private void CarveSphere(Aerator aerator, ref bool aeratorCollided)
     {
         var tp = aerator.tool.transform.position;
         var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * VoxelSize;
@@ -116,7 +124,6 @@ public class Tooth : MonoBehaviour
         // TODO: check neighboring voxels
         // TODO: move this code to its own function
         // TODO: do not run this code in CarveSphere
-        var aeratorCollided = false;
         // var voxelIndex = GlobalPositionToVoxelIndex(tp);
         // var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
         // if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
@@ -138,7 +145,7 @@ public class Tooth : MonoBehaviour
         }
     }
 
-    private void CarveCapsule(Aerator aerator)
+    private void CarveCapsule(Aerator aerator, ref bool aeratorCollided)
     {
         var tp = aerator.tool.transform.position;
         var ts = aerator.tool.transform.localScale;
@@ -164,6 +171,9 @@ public class Tooth : MonoBehaviour
         computeShader.SetFloat("Scale", VoxelSize);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(3, size.x, size.y, size.z);
+
+        collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
+        if (readBuffer[0] > 0) aeratorCollided = true;
     }
 
     private Vector3Int GlobalPositionToVoxelIndex(Vector3 position)
