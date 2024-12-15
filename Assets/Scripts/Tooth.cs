@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using MarchingCubes;
-using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -155,7 +154,7 @@ public class Tooth : MonoBehaviour
         Vector3 topTip = aerator.tool.transform.TransformPoint(localTopTip);
         Vector3 bottomTip = aerator.tool.transform.TransformPoint(localBottomTip);
 
-        Debug.Log($"TopTip: {topTip}, BottomTip: {bottomTip}, Capsule Rotation: {transform.rotation}");
+        // Debug.Log($"TopTip: {topTip}, BottomTip: {bottomTip}, Capsule Rotation: {transform.rotation}");
 
         computeShader.SetFloat("ToolPower", aerator.power);
         computeShader.SetFloats("capsuleToolA", topTip.x, topTip.y, topTip.z);
@@ -176,7 +175,7 @@ public class Tooth : MonoBehaviour
             (int)Math.Round(localPosition.z / VoxelSize)
             );
 
-        index.Clamp(new(0, 0, 0), size);
+        index.Clamp(new Vector3Int(0, 0, 0) - (size / 2), new Vector3Int(0, 0, 0) + (size / 2));
         return index;
     }
 
