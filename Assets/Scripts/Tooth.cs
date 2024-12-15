@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using MarchingCubes;
-using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -13,7 +12,9 @@ public class Tooth : MonoBehaviour
     [SerializeField] private List<Aerator> aerators;
     [SerializeField] private Vector3Int size = new(32, 32, 32);
     [SerializeField, Range(-2, 8)] private int scale = 3;
-    [SerializeField] GameObject debugCube;
+    [SerializeField] GameObject debugCubePrefab;
+    private List<GameObject> debugCubes = new();
+    private List<Vector3> debugCubeOffsetDirs = new();
     private float SurfaceLevel = 0f;
     private ComputeBuffer voxelBuffer; // GPU
     private ComputeBuffer voxelToughnessBuffer; // GPU
@@ -54,7 +55,7 @@ public class Tooth : MonoBehaviour
         voxelBuffer.SetData(voxelData);
         voxelToughnessBuffer.SetData(voxelToughnessData);
 
-        computeShader.SetBuffer(1, "CollisionInfo", collisionInfoBuffer);
+        computeShader.SetBuffer(4, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(2, "Voxels", voxelBuffer);
         computeShader.SetBuffer(2, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(2, "VoxelToughness", voxelToughnessBuffer);
@@ -64,6 +65,15 @@ public class Tooth : MonoBehaviour
 
         builder = new MeshBuilder(size, 1000000, computeShader);
         BuildMesh();
+
+        for (int i = 0; i < 4; i++)
+        {
+            debugCubes.Add(Instantiate(debugCubePrefab));
+        }
+        debugCubeOffsetDirs.Add(new Vector3(-1, 0, -1));
+        debugCubeOffsetDirs.Add(new Vector3(-1, 0, 1));
+        debugCubeOffsetDirs.Add(new Vector3(1, 0, -1));
+        debugCubeOffsetDirs.Add(new Vector3(1, 0, 1));
     }
 
     public void FixedUpdate()
@@ -74,10 +84,14 @@ public class Tooth : MonoBehaviour
             {
                 case AeratorType.Sphere:
                     CarveSphere(aerator);
-                    if (debugCube != null)
+                    for (int i = 0; i < 4; i++)
                     {
-                        var index = GlobalPositionToVoxelIndex(aerator.tool.transform.position);
+                        var debugCube = debugCubes[i];
+                        var index = GlobalPositionToVoxelIndex(
+                            aerator.tool.transform.position + debugCubeOffsetDirs[i] * VoxelSize
+                            );
                         debugCube.transform.position = transform.position + (new Vector3(0, 0, 0) + index) * VoxelSize;
+                        debugCube.transform.position -= new Vector3(size.x, size.y, size.z) / 2.0f * VoxelSize;
                         debugCube.transform.localScale = new(VoxelSize, VoxelSize, VoxelSize);
                     }
                     break;
@@ -117,26 +131,29 @@ public class Tooth : MonoBehaviour
         // TODO: check neighboring voxels
         // TODO: move this code to its own function
         // TODO: do not run this code in CarveSphere
-        var aeratorCollided = false;
-        // var voxelIndex = GlobalPositionToVoxelIndex(tp);
-        // var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
-        // if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
-        // {
-        //     Debug.Log("INDEX: " + flattenedIndex);
-        //     collisionInfoBuffer.GetData(readBuffer, 0, flattenedIndex, 1);
-        //     Debug.Log("VALUE: " + readBuffer[0]);
-        //     if (readBuffer[0] > 0) aeratorCollided = true;
-        // }
-        collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
-        if (readBuffer[0] > 0) aeratorCollided = true;
-        if (aeratorCollided)
+        for (int i = 0; i < 4; i++)
         {
-            debugCube.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0, 255, 0, 128));
+            var debugCube = debugCubes[i];
+            var aeratorCollided = false;
+            var voxelIndex = GlobalPositionToVoxelIndex(tp + debugCubeOffsetDirs[i] * VoxelSize);
+            var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
+            if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
+            {
+                collisionInfoBuffer.GetData(readBuffer, 0, flattenedIndex, 1);
+                if (readBuffer[0] > 0) aeratorCollided = true;
+            }
+            if (readBuffer[0] > 0) aeratorCollided = true;
+            if (aeratorCollided)
+            {
+                debugCube.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0, 255, 0, 128));
+            }
+            else
+            {
+                debugCube.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(255, 0, 0, 128));
+            }
         }
-        else
-        {
-            debugCube.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(255, 0, 0, 128));
-        }
+        // TODO: move this code (clears collision info buffer)
+        computeShader.DispatchThreads(4, size.x, size.y, size.z);
     }
 
     private void CarveCapsule(Aerator aerator)
@@ -170,6 +187,7 @@ public class Tooth : MonoBehaviour
     private Vector3Int GlobalPositionToVoxelIndex(Vector3 position)
     {
         Vector3 localPosition = position - transform.position;
+        localPosition += new Vector3(size.x, size.y, size.z) / 2.0f * VoxelSize;
         Vector3Int index = new(
             (int)Math.Round(localPosition.x / VoxelSize),
             (int)Math.Round(localPosition.y / VoxelSize),

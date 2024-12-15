@@ -2,6 +2,7 @@
 #pragma kernel ClearUnused // 1
 #pragma kernel Carve // 2
 #pragma kernel CarveCapsule // 3
+#pragma kernel ClearCollisionBuffer // 4
 
 // Workaround for the absence of sizeof operator in HLSL
 #define SIZEOF_UINT 4
@@ -173,8 +174,6 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
 [numthreads(64, 1, 1)]
 void ClearUnused(uint id : SV_DispatchThreadID)
 {
-    // Set collision info to 'no collision'
-    CollisionInfo[0] = 0;
     while (true)
     {
         uint count = Counter.IncrementCounter();
@@ -202,7 +201,7 @@ void Carve(uint3 id : SV_DispatchThreadID)
     if (length(ToolPosition - voxelPos) < ToolRange * ToolRange) {
         float voxelVal = GetVoxelValue(id.x, id.y, id.z);
         if(voxelVal > 0)
-            CollisionInfo[0] = 1.0;
+            CollisionInfo[id.x + Dims.x * (id.y + Dims.y * id.z)] = GetVoxelToughness(id.x,id.y,id.z);
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
@@ -229,4 +228,14 @@ void CarveCapsule(uint3 id : SV_DispatchThreadID)
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
+}
+
+// Kernel for clearing collision info buffer
+[numthreads(4, 4, 4)]
+void ClearCollisionBuffer(uint3 id : SV_DispatchThreadID)
+{
+    // Boundary check
+    if (any(id + 1 >= Dims.xyz)) return;
+    
+    CollisionInfo[id.x + Dims.x * (id.y + Dims.y * id.z)] = 0.0;
 }
