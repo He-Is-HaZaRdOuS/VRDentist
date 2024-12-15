@@ -190,8 +190,13 @@ public class Tooth : MonoBehaviour
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(3, size.x, size.y, size.z);
 
-        collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
-        if (readBuffer[0] > 0) aeratorCollided = true;
+        var voxelIndex = GlobalPositionToVoxelIndex(tp);
+        var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
+        if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
+        {
+            collisionInfoBuffer.GetData(readBuffer, 0, flattenedIndex, 1);
+            if (readBuffer[0] > 0) aeratorCollided = true;
+        }
     }
 
     private Vector3Int GlobalPositionToVoxelIndex(Vector3 position)
@@ -204,7 +209,7 @@ public class Tooth : MonoBehaviour
             (int)Math.Round(localPosition.z / VoxelSize)
             );
 
-        index.Clamp(new Vector3Int(0, 0, 0) - (size / 2), new Vector3Int(0, 0, 0) + (size / 2));
+        index.Clamp(new Vector3Int(0, 0, 0), size);
         return index;
     }
 
