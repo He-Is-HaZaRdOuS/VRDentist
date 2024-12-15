@@ -225,6 +225,8 @@ void CarveCapsule(uint3 id : SV_DispatchThreadID)
     if (length(pa - ba*h) < capsuleToolRange * capsuleToolRange) {
         float voxelVal = GetVoxelValue(id.x, id.y, id.z);
         // if(voxelVal < -1.0) return;
+        if(voxelVal > 0)
+        CollisionInfo[0] = 1.0;
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }

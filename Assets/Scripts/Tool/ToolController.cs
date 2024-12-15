@@ -5,8 +5,6 @@ using UnityEngine.InputSystem;
 
 public class ToolController : MonoBehaviour
 {
-    private Vector2 mouseInput;
-    private Vector2 WSAD;
     private Vector2 rotation;
     private Vector3 movementDirection;
 
@@ -38,7 +36,7 @@ public class ToolController : MonoBehaviour
 
     public void YawPitchRotation(InputAction.CallbackContext context)
     {
-        Debug.Log("YawPitch");
+        // Debug.Log("YawPitch");
         if (true)
         {
             rotation = context.ReadValue<Vector2>();
@@ -47,7 +45,7 @@ public class ToolController : MonoBehaviour
 
     public void XZMovement(InputAction.CallbackContext context)
     {
-        Debug.Log("XZMovement");
+        // Debug.Log("XZMovement");
         if (true)
         {
             movementDirection.x = context.ReadValue<Vector2>().x;
@@ -57,7 +55,7 @@ public class ToolController : MonoBehaviour
 
     public void YMovement(InputAction.CallbackContext context)
     {
-        Debug.Log("YMovement");
+        // Debug.Log("YMovement");
         if (true)
         {
             movementDirection.y = context.ReadValue<Vector2>().y;
@@ -66,6 +64,6 @@ public class ToolController : MonoBehaviour
 
     public void ToolRotationSpeed(InputAction.CallbackContext context)
     {
-        Debug.Log("ToolRotationSpeed");
+        // Debug.Log("ToolRotationSpeed");
     }
 }
