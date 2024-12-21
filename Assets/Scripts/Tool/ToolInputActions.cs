@@ -55,13 +55,22 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""ToolRotationSpeed"",
+                    ""name"": ""ToolRotationPower"",
                     ""type"": ""Value"",
                     ""id"": ""19ea8bf3-0169-4340-817e-8218117770fa"",
                     ""expectedControlType"": ""Axis"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CycleAerator"",
+                    ""type"": ""Button"",
+                    ""id"": ""2e39fb7f-4118-400f-95c2-d9cc5e5860d9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -149,7 +158,18 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""ToolRotationSpeed"",
+                    ""action"": ""ToolRotationPower"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e5ca71d1-0a4c-4ae4-a424-46c496a1df2a"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CycleAerator"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -163,7 +183,8 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
         m_GamepadMap_YawPitchRotation = m_GamepadMap.FindAction("YawPitchRotation", throwIfNotFound: true);
         m_GamepadMap_XZMovement = m_GamepadMap.FindAction("XZMovement", throwIfNotFound: true);
         m_GamepadMap_YMovement = m_GamepadMap.FindAction("YMovement", throwIfNotFound: true);
-        m_GamepadMap_ToolRotationSpeed = m_GamepadMap.FindAction("ToolRotationSpeed", throwIfNotFound: true);
+        m_GamepadMap_ToolRotationPower = m_GamepadMap.FindAction("ToolRotationPower", throwIfNotFound: true);
+        m_GamepadMap_CycleAerator = m_GamepadMap.FindAction("CycleAerator", throwIfNotFound: true);
     }
 
     ~@ToolInputActions()
@@ -233,7 +254,8 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_GamepadMap_YawPitchRotation;
     private readonly InputAction m_GamepadMap_XZMovement;
     private readonly InputAction m_GamepadMap_YMovement;
-    private readonly InputAction m_GamepadMap_ToolRotationSpeed;
+    private readonly InputAction m_GamepadMap_ToolRotationPower;
+    private readonly InputAction m_GamepadMap_CycleAerator;
     public struct GamepadMapActions
     {
         private @ToolInputActions m_Wrapper;
@@ -241,7 +263,8 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
         public InputAction @YawPitchRotation => m_Wrapper.m_GamepadMap_YawPitchRotation;
         public InputAction @XZMovement => m_Wrapper.m_GamepadMap_XZMovement;
         public InputAction @YMovement => m_Wrapper.m_GamepadMap_YMovement;
-        public InputAction @ToolRotationSpeed => m_Wrapper.m_GamepadMap_ToolRotationSpeed;
+        public InputAction @ToolRotationPower => m_Wrapper.m_GamepadMap_ToolRotationPower;
+        public InputAction @CycleAerator => m_Wrapper.m_GamepadMap_CycleAerator;
         public InputActionMap Get() { return m_Wrapper.m_GamepadMap; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -260,9 +283,12 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
             @YMovement.started += instance.OnYMovement;
             @YMovement.performed += instance.OnYMovement;
             @YMovement.canceled += instance.OnYMovement;
-            @ToolRotationSpeed.started += instance.OnToolRotationSpeed;
-            @ToolRotationSpeed.performed += instance.OnToolRotationSpeed;
-            @ToolRotationSpeed.canceled += instance.OnToolRotationSpeed;
+            @ToolRotationPower.started += instance.OnToolRotationPower;
+            @ToolRotationPower.performed += instance.OnToolRotationPower;
+            @ToolRotationPower.canceled += instance.OnToolRotationPower;
+            @CycleAerator.started += instance.OnCycleAerator;
+            @CycleAerator.performed += instance.OnCycleAerator;
+            @CycleAerator.canceled += instance.OnCycleAerator;
         }
 
         private void UnregisterCallbacks(IGamepadMapActions instance)
@@ -276,9 +302,12 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
             @YMovement.started -= instance.OnYMovement;
             @YMovement.performed -= instance.OnYMovement;
             @YMovement.canceled -= instance.OnYMovement;
-            @ToolRotationSpeed.started -= instance.OnToolRotationSpeed;
-            @ToolRotationSpeed.performed -= instance.OnToolRotationSpeed;
-            @ToolRotationSpeed.canceled -= instance.OnToolRotationSpeed;
+            @ToolRotationPower.started -= instance.OnToolRotationPower;
+            @ToolRotationPower.performed -= instance.OnToolRotationPower;
+            @ToolRotationPower.canceled -= instance.OnToolRotationPower;
+            @CycleAerator.started -= instance.OnCycleAerator;
+            @CycleAerator.performed -= instance.OnCycleAerator;
+            @CycleAerator.canceled -= instance.OnCycleAerator;
         }
 
         public void RemoveCallbacks(IGamepadMapActions instance)
@@ -301,6 +330,7 @@ public partial class @ToolInputActions: IInputActionCollection2, IDisposable
         void OnYawPitchRotation(InputAction.CallbackContext context);
         void OnXZMovement(InputAction.CallbackContext context);
         void OnYMovement(InputAction.CallbackContext context);
-        void OnToolRotationSpeed(InputAction.CallbackContext context);
+        void OnToolRotationPower(InputAction.CallbackContext context);
+        void OnCycleAerator(InputAction.CallbackContext context);
     }
 }

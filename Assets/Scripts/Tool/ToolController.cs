@@ -7,11 +7,7 @@ public class ToolController : MonoBehaviour
 {
     private Vector2 rotation;
     private Vector3 movementDirection;
-
-
     public float toolMovementSpeed = 1f;
-    public float cameraMovementSpeed = 0.5f;
-    public float cameraRotationSpeed = 4f;
 
     void Awake()
     {

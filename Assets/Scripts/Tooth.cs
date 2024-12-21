@@ -15,6 +15,7 @@ public class Tooth : MonoBehaviour
     [SerializeField] GameObject debugCubePrefab;
     private List<GameObject> debugCubes = new();
     private List<Vector3> debugCubeOffsetDirs = new();
+    private float triggerValue = 0.0f;
     public float lowFreq = 0.0f;
     public float highFreq = 0.0f;
     private float SurfaceLevel = 0f;
@@ -80,6 +81,8 @@ public class Tooth : MonoBehaviour
 
     public void FixedUpdate()
     {
+        triggerValue = ToolInputManager.instance.triggerValue;
+
         foreach (var aerator in aerators)
         {
             bool aeratorCollided = false;
@@ -104,8 +107,7 @@ public class Tooth : MonoBehaviour
             }
             if (aeratorCollided)
             {
-                Debug.Log("Collided");
-                RumbleManager.instance.RumblePulse(lowFreq, highFreq, 0.2f);
+                RumbleManager.instance.SetCollisionIntensity(highFreq * triggerValue);
             }
         }
         BuildMesh();
@@ -125,6 +127,11 @@ public class Tooth : MonoBehaviour
         collisionInfoBuffer.Dispose();
     }
 
+    private void SetToolPower(Aerator aerator)
+    {
+        computeShader.SetFloat("ToolPower", aerator.power * triggerValue);
+    }
+
     private void CarveSphere(Aerator aerator, ref bool aeratorCollided)
     {
         var tp = aerator.tool.transform.position;
@@ -132,7 +139,7 @@ public class Tooth : MonoBehaviour
         computeShader.SetFloats("ToolPosition", tp.x, tp.y, tp.z);
         computeShader.SetFloat("ToolRange", 0.125f);
         computeShader.SetFloat("Scale", VoxelSize);
-        computeShader.SetFloat("ToolPower", aerator.power);
+        SetToolPower(aerator);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(2, size.x, size.y, size.z);
 
@@ -181,7 +188,7 @@ public class Tooth : MonoBehaviour
 
         // Debug.Log($"TopTip: {topTip}, BottomTip: {bottomTip}, Capsule Rotation: {transform.rotation}");
 
-        computeShader.SetFloat("ToolPower", aerator.power);
+        SetToolPower(aerator);
         computeShader.SetFloats("capsuleToolA", topTip.x, topTip.y, topTip.z);
         computeShader.SetFloats("capsuleToolB", bottomTip.x, bottomTip.y, bottomTip.z);
         computeShader.SetFloat("capsuleToolRange", 0.1f); // used to be 0.125f
