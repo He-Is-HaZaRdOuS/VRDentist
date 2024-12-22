@@ -1093,7 +1093,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 803642038}
         m_TargetAssemblyTypeName: ToolInputManager, Assembly-CSharp
-        m_MethodName: CycleAerator
+        m_MethodName: CycleAeratorForward
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1105,6 +1105,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 2e39fb7f-4118-400f-95c2-d9cc5e5860d9
     m_ActionName: GamepadMap/CycleAerator[/Gamepad/buttonEast]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 803642038}
+        m_TargetAssemblyTypeName: ToolInputManager, Assembly-CSharp
+        m_MethodName: CycleAeratorBackward
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: a6cbd57c-3de3-4b26-8617-974dfa3c1179
+    m_ActionName: GamepadMap/CycleAeratorBackward[/Gamepad/dpad/left]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: GamepadMap
@@ -1123,8 +1139,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aerators: []
-  debugText: {fileID: 704587563}
+  activeMaterial: {fileID: 2100000, guid: 89ff481618a78346d8e32c65a8148293, type: 2}
+  defaultMaterial: {fileID: 2100000, guid: 02d4a84cd387f3644ae11aaacb52dd30, type: 2}
   toolMovementSpeed: 1
+  debugText: {fileID: 704587563}
   triggerValue: 0
 --- !u!4 &803642039
 Transform:

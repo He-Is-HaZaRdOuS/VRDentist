@@ -42,9 +42,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "CycleAerator",
+                    "name": "CycleAeratorForward",
                     "type": "Button",
                     "id": "2e39fb7f-4118-400f-95c2-d9cc5e5860d9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CycleAeratorBackward",
+                    "type": "Button",
+                    "id": "a6cbd57c-3de3-4b26-8617-974dfa3c1179",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -143,11 +152,22 @@
                 {
                     "name": "",
                     "id": "e5ca71d1-0a4c-4ae4-a424-46c496a1df2a",
-                    "path": "<Gamepad>/buttonEast",
+                    "path": "<Gamepad>/dpad/right",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "CycleAerator",
+                    "action": "CycleAeratorForward",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9f2747bd-9e83-4cca-b20c-73610bc0bebc",
+                    "path": "<Gamepad>/dpad/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CycleAeratorBackward",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
