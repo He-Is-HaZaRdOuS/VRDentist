@@ -82,6 +82,7 @@ public class Tooth : MonoBehaviour
     public void FixedUpdate()
     {
         triggerValue = ToolInputManager.instance.triggerValue;
+        triggerValue = 1.0f; // Dirty quick fix
 
         foreach (var aerator in aerators)
         {
