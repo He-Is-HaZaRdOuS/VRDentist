@@ -18,14 +18,12 @@ public class ToolInputManager : MonoBehaviour
     [Header("Tool Movement")]
     [SerializeField] private float toolMovementSpeed = 1f;
 
-    [Header("UI Canvas")]
-    [SerializeField] private TextMeshProUGUI debugText;
-
     private int maxAeratorIndex = 0;
     private int activeAeratorIndex = 0;
     private Vector2 rotation;
     private Vector3 movementDirection;
-    public float triggerValue = 0.0f;
+    public float RightTriggerValue = 0.0f;
+    public float LeftTriggerValue = 0.0f;
 
     private void Awake()
     {
@@ -42,7 +40,6 @@ public class ToolInputManager : MonoBehaviour
             Debug.LogError("No aerators found in the scene!");
             return;
         }
-        debugText.text = "Active Aerator: " + activeAeratorIndex;
     }
 
     void Update()
@@ -74,8 +71,8 @@ public class ToolInputManager : MonoBehaviour
 
         // === Tool Rotation ===
         // Rotate the tool around its local axes (X and Z) based on input
-        aerators[activeAeratorIndex].transform.Rotate(rotation.y, 0, 0, Space.Self); // Rotate around X-axis
-        aerators[activeAeratorIndex].transform.Rotate(0, 0, rotation.x, Space.Self); // Rotate around Z-axis
+        aerators[activeAeratorIndex].transform.Rotate(rotation.y * toolMovementSpeed, 0, 0, Space.Self); // Rotate around X-axis
+        aerators[activeAeratorIndex].transform.Rotate(0, 0, rotation.x * toolMovementSpeed, Space.Self); // Rotate around Z-axis
     }
 
     public void RegisterAerator(Aerator aerator)
@@ -114,26 +111,79 @@ public class ToolInputManager : MonoBehaviour
 
     public void YMovement(InputAction.CallbackContext context)
     {
-        movementDirection.y = context.ReadValue<Vector2>().y;
+        movementDirection.y = context.ReadValue<float>();
     }
 
     public void ToolRotationPower(InputAction.CallbackContext context)
     {
-        triggerValue = context.ReadValue<float>();
+        float rawValue = context.ReadValue<float>();
 
-        RumbleManager.instance.SetTriggerRumble(triggerValue / 5.0f);
+        // Apply deadzone
+        const float deadzoneThreshold = 0.1f;
+        RightTriggerValue = Mathf.Abs(rawValue) > deadzoneThreshold ? rawValue : 0f;
 
+        // Use the adjusted value for rumble
+        RumbleManager.instance.SetTriggerRumble(RightTriggerValue / 5.0f);
     }
 
-    public void CycleAeratorForward(InputAction.CallbackContext context)
+    public void ToolMovementSpeed(InputAction.CallbackContext context)
     {
-        activeAeratorIndex = Mathf.Min(activeAeratorIndex + 1, maxAeratorIndex - 1);
-        debugText.text = "Active Aerator: " + activeAeratorIndex;
+        float rawValue = context.ReadValue<float>();
+
+        // Invert
+        LeftTriggerValue = 1.0f - rawValue;
+        toolMovementSpeed = LeftTriggerValue;
     }
 
-    public void CycleAeratorBackward(InputAction.CallbackContext context)
+    public void DPad(InputAction.CallbackContext context)
     {
-        activeAeratorIndex = Mathf.Max(activeAeratorIndex - 1, 0);
-        debugText.text = "Active Aerator: " + activeAeratorIndex;
+        Vector2 dPadValue = context.ReadValue<Vector2>();
+        if (!context.performed)
+        {
+            return;
+        }
+
+        if (dPadValue.x > 0)
+        {
+            CycleAeratorForward();
+        }
+        else if (dPadValue.x < 0)
+        {
+            CycleAeratorBackward();
+        }
+        else if (dPadValue.y > 0)
+        {
+            IncrementToolMovementSpeed();
+        }
+        else if (dPadValue.y < 0)
+        {
+            DecrementToolMovementSpeed();
+        }
+    }
+
+    public void CycleAeratorForward()
+    {
+        // Increment the index and wrap around to 0 if it exceeds the max index
+        activeAeratorIndex = (activeAeratorIndex + 1) % maxAeratorIndex;
+        Debug.Log("Active Aerator: " + activeAeratorIndex);
+    }
+
+    public void CycleAeratorBackward()
+    {
+        // Decrement the index and wrap around to the max index if it goes below 0
+        activeAeratorIndex = (activeAeratorIndex - 1 + maxAeratorIndex) % maxAeratorIndex;
+        Debug.Log("Active Aerator: " + activeAeratorIndex);
+    }
+
+    public void IncrementToolMovementSpeed()
+    {
+        toolMovementSpeed += 0.1f;
+        toolMovementSpeed = Mathf.Clamp(toolMovementSpeed, 0.1f, 1.0f);
+    }
+
+    public void DecrementToolMovementSpeed()
+    {
+        toolMovementSpeed -= 0.1f;
+        toolMovementSpeed = Mathf.Clamp(toolMovementSpeed, 0.1f, 1.0f);
     }
 }

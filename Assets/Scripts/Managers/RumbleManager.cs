@@ -36,7 +36,8 @@ public class RumbleManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        pad.SetMotorSpeeds(0f, 0f); // Stop rumble when the script is destroyed
+        if (pad != null)
+            pad.SetMotorSpeeds(0f, 0f); // Stop rumble when the script is destroyed
     }
 
     void Update()

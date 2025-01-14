@@ -1,0 +1,156 @@
+{
+    "name": "ToolInputActions",
+    "maps": [
+        {
+            "name": "GamepadMap",
+            "id": "7f3e14c0-b96b-4e95-85cd-8a27c4a7aeeb",
+            "actions": [
+                {
+                    "name": "YawPitchRotation",
+                    "type": "Value",
+                    "id": "f96a7d97-f0b7-4bec-9a59-5f291b47205e",
+                    "expectedControlType": "Stick",
+                    "processors": "StickDeadzone",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "XZMovement",
+                    "type": "Value",
+                    "id": "fe94bdff-b1d3-4b3b-9a05-39d6a64c02ef",
+                    "expectedControlType": "Stick",
+                    "processors": "StickDeadzone",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "YMovement",
+                    "type": "Value",
+                    "id": "2d5ff221-5245-4877-a5e6-4c3fff09375b",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ToolRotationPower",
+                    "type": "Value",
+                    "id": "19ea8bf3-0169-4340-817e-8218117770fa",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ToolMovementSpeed",
+                    "type": "Value",
+                    "id": "6e6f9488-9d7a-4a02-9bd2-609aaae43183",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "DPad",
+                    "type": "Value",
+                    "id": "fa442752-1f32-49fe-88d1-e490c372aa1f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "0c9a0f75-96e3-469a-abf6-cd4b6b007c32",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "XZMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "be7fbfa8-5df1-4676-81fd-27790500e702",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "YawPitchRotation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "1D Axis",
+                    "id": "63b83b1d-ac47-4dbb-88af-c3fe4e2a22dc",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "YMovement",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "3815ca93-c8e9-48e1-a1e6-30e3a86f96d3",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "YMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "d6404994-f5a0-4a0a-a001-39f09c97a07e",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "YMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "f142028c-1834-4623-85ad-43c0a160fe89",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToolRotationPower",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9a1cff5b-d311-45c1-8d6c-1407343f92cc",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToolMovementSpeed",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3967ffeb-959c-4c0c-b1f7-23c80e2e16ca",
+                    "path": "<Gamepad>/dpad",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DPad",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

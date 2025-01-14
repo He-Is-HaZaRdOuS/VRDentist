@@ -25,8 +25,8 @@ public class Tooth : MonoBehaviour
     private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
 
-
     private float VoxelSize => (float)(Math.Pow(2, scale) / 256);
+
 
     public void Start()
     {
@@ -81,7 +81,8 @@ public class Tooth : MonoBehaviour
 
     public void FixedUpdate()
     {
-        triggerValue = ToolInputManager.instance.triggerValue;
+        triggerValue = ToolInputManager.instance.RightTriggerValue;
+        triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
 
         foreach (var aerator in aerators)
         {

@@ -8,7 +8,7 @@
 /[Bb]uild/
 /[Bb]uilds/
 /[Ll]ogs/
-/[Pp]ackages/
+#/[Pp]ackages/
 /[Uu]ser[Ss]ettings/
 /VRDentist*
 
