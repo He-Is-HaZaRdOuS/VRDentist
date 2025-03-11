@@ -8,53 +8,41 @@ using UnityEngine;
 public class Tooth : MonoBehaviour
 {
     [SerializeField] private ComputeShader computeShader = null;
-    [SerializeField] private List<Layer> layers;
     [SerializeField] private List<Aerator> aerators;
-    [SerializeField] private Vector3Int size = new(32, 32, 32);
-    [SerializeField, Range(-2, 8)] private int scale = 3;
-    [SerializeField] GameObject debugCubePrefab;
+    [SerializeField] private GameObject debugCubePrefab;
+    [SerializeField] private int resolution = 128;
     private List<GameObject> debugCubes = new();
     private List<Vector3> debugCubeOffsetDirs = new();
     private float triggerValue = 0.0f;
     public float lowFreq = 0.0f;
     public float highFreq = 0.0f;
-    private float SurfaceLevel = 0f;
     private ComputeBuffer voxelBuffer; // GPU
     private ComputeBuffer voxelToughnessBuffer; // GPU
     private ComputeBuffer collisionInfoBuffer; // GPU
     private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
+    
+    private MeshFilter _meshFilter;
 
-    private float VoxelSize => (float)(Math.Pow(2, scale) / 256);
+    private float VoxelSize => _voxelSize;
+    // number of voxels in each dimension
+    private Vector3Int _gridSize = Vector3Int.zero;
+    private float _voxelSize;
 
+    public void Awake()
+    {
+        _meshFilter = GetComponent<MeshFilter>();
+    }
 
     public void Start()
     {
-        float[,,] voxelData = null;
-        float[,,] voxelToughnessData = new float[size.x, size.y, size.z];
-        bool hasRenderLayer = false;
-        int resolution = Math.Max(size.x, Math.Max(size.y, size.z));
-        foreach (var layer in layers)
-        {
-            if (layer.isRenderLayer)
-            {
-                if (hasRenderLayer) throw new Exception("Cannot have multiple render layers");
-                voxelData = MeshVoxelizer.SmoothVoxelize(layer.mesh, size, resolution, 2);
-                hasRenderLayer = true;
-            }
-            var toughness = MeshVoxelizer.Voxelize(layer.mesh, size, resolution);
-            // TODO: Too expensive?
-            for (int x = 0; x < size.x; x++)
-                for (int y = 0; y < size.y; y++)
-                    for (int z = 0; z < size.z; z++)
-                        voxelToughnessData[x, y, z] = Mathf.Max(voxelToughnessData[x, y, z], toughness[x, y, z] * layer.toughness);
-        }
-        if (!hasRenderLayer) throw new Exception("Render layer not selected");
-
-        voxelBuffer = new ComputeBuffer(size.x * size.y * size.z, sizeof(float));
-        collisionInfoBuffer = new ComputeBuffer(size.x * size.y * size.z, sizeof(float));
-        voxelToughnessBuffer = new ComputeBuffer(size.x * size.y * size.z, sizeof(float));
-
+        var voxelData = MeshVoxelizer.SmoothVoxelize(_meshFilter.mesh, ref _gridSize, ref _voxelSize, resolution, 1);
+        var voxelToughnessData = new float[_gridSize.x, _gridSize.y, _gridSize.z];
+        
+        voxelBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
+        collisionInfoBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
+        voxelToughnessBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
+        
         voxelBuffer.SetData(voxelData);
         voxelToughnessBuffer.SetData(voxelToughnessData);
 
@@ -66,7 +54,7 @@ public class Tooth : MonoBehaviour
         computeShader.SetBuffer(3, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(3, "VoxelToughness", voxelToughnessBuffer);
 
-        builder = new MeshBuilder(size, 1000000, computeShader);
+        builder = new MeshBuilder(_gridSize, 1000000, computeShader);
         BuildMesh();
 
         for (int i = 0; i < 4; i++)
@@ -84,9 +72,9 @@ public class Tooth : MonoBehaviour
         triggerValue = ToolInputManager.instance.RightTriggerValue;
         triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
 
+        bool aeratorCollided = true;
         foreach (var aerator in aerators)
         {
-            bool aeratorCollided = false;
             switch (aerator.type)
             {
                 case AeratorType.Sphere:
@@ -98,7 +86,7 @@ public class Tooth : MonoBehaviour
                             aerator.tool.transform.position + debugCubeOffsetDirs[i] * VoxelSize
                             );
                         debugCube.transform.position = transform.position + (new Vector3(0, 0, 0) + index) * VoxelSize;
-                        debugCube.transform.position -= new Vector3(size.x, size.y, size.z) / 2.0f * VoxelSize;
+                        debugCube.transform.position -= new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) / 2.0f * VoxelSize;
                         debugCube.transform.localScale = new(VoxelSize, VoxelSize, VoxelSize);
                     }
                     break;
@@ -111,13 +99,14 @@ public class Tooth : MonoBehaviour
                 RumbleManager.instance.SetCollisionIntensity(highFreq * triggerValue);
             }
         }
-        BuildMesh();
+        if (aeratorCollided)
+            BuildMesh();
     }
 
     private void BuildMesh()
     {
-        builder.BuildIsosurface(voxelBuffer, SurfaceLevel, VoxelSize);
-        GetComponent<MeshFilter>().sharedMesh = builder.Mesh;
+        builder.BuildIsosurface(voxelBuffer, 0f, VoxelSize);
+        _meshFilter.sharedMesh = builder.Mesh;
     }
 
     public void OnDestroy()
@@ -136,13 +125,13 @@ public class Tooth : MonoBehaviour
     private void CarveSphere(Aerator aerator, ref bool aeratorCollided)
     {
         var tp = aerator.tool.transform.position;
-        var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * VoxelSize;
+        var dp = transform.position - new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) / 2f * VoxelSize;
         computeShader.SetFloats("ToolPosition", tp.x, tp.y, tp.z);
         computeShader.SetFloat("ToolRange", 0.125f);
         computeShader.SetFloat("Scale", VoxelSize);
         SetToolPower(aerator);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
-        computeShader.DispatchThreads(2, size.x, size.y, size.z);
+        computeShader.DispatchThreads(2, _gridSize.x, _gridSize.y, _gridSize.z);
 
         // TODO: check neighboring voxels
         // TODO: move this code to its own function
@@ -151,8 +140,8 @@ public class Tooth : MonoBehaviour
         {
             var debugCube = debugCubes[i];
             var voxelIndex = GlobalPositionToVoxelIndex(tp + debugCubeOffsetDirs[i] * VoxelSize);
-            var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
-            if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
+            var flattenedIndex = voxelIndex.x + _gridSize.x * (voxelIndex.y + _gridSize.y * voxelIndex.z);
+            if (flattenedIndex >= 0 && flattenedIndex < _gridSize.x * _gridSize.y * _gridSize.z)
             {
                 collisionInfoBuffer.GetData(readBuffer, 0, flattenedIndex, 1);
                 if (readBuffer[0] > 0) aeratorCollided = true;
@@ -168,14 +157,14 @@ public class Tooth : MonoBehaviour
             }
         }
         // TODO: move this code (clears collision info buffer)
-        computeShader.DispatchThreads(4, size.x, size.y, size.z);
+        computeShader.DispatchThreads(4, _gridSize.x, _gridSize.y, _gridSize.z);
     }
 
     private void CarveCapsule(Aerator aerator, ref bool aeratorCollided)
     {
         var tp = aerator.tool.transform.position;
         var ts = aerator.tool.transform.localScale;
-        var dp = transform.position - new Vector3(size.x, size.y, size.z) / 2f * VoxelSize;
+        var dp = transform.position - new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) / 2f * VoxelSize;
         // var topObj = GameObject.Find("top").transform.position;
         // var bottomObj = GameObject.Find("bottom").transform.position;
 
@@ -196,11 +185,11 @@ public class Tooth : MonoBehaviour
 
         computeShader.SetFloat("Scale", VoxelSize);
         computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
-        computeShader.DispatchThreads(3, size.x, size.y, size.z);
+        computeShader.DispatchThreads(3, _gridSize.x, _gridSize.y, _gridSize.z);
 
         var voxelIndex = GlobalPositionToVoxelIndex(tp);
-        var flattenedIndex = voxelIndex.x + size.x * (voxelIndex.y + size.y * voxelIndex.z);
-        if (flattenedIndex >= 0 && flattenedIndex < size.x * size.y * size.z)
+        var flattenedIndex = voxelIndex.x + _gridSize.x * (voxelIndex.y + _gridSize.y * voxelIndex.z);
+        if (flattenedIndex >= 0 && flattenedIndex < _gridSize.x * _gridSize.y * _gridSize.z)
         {
             collisionInfoBuffer.GetData(readBuffer, 0, flattenedIndex, 1);
             if (readBuffer[0] > 0) aeratorCollided = true;
@@ -210,14 +199,14 @@ public class Tooth : MonoBehaviour
     private Vector3Int GlobalPositionToVoxelIndex(Vector3 position)
     {
         Vector3 localPosition = position - transform.position;
-        localPosition += new Vector3(size.x, size.y, size.z) / 2.0f * VoxelSize;
+        localPosition += new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) / 2.0f * VoxelSize;
         Vector3Int index = new(
             (int)Math.Round(localPosition.x / VoxelSize),
             (int)Math.Round(localPosition.y / VoxelSize),
             (int)Math.Round(localPosition.z / VoxelSize)
             );
 
-        index.Clamp(new Vector3Int(0, 0, 0), size);
+        index.Clamp(new Vector3Int(0, 0, 0), _gridSize);
         return index;
     }
 

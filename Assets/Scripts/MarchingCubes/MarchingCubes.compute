@@ -47,17 +47,17 @@ uint EdgeIndexFromTriangleTable(uint2 data, uint index)
 
 float GetVoxelValue(uint x, uint y, uint z)
 {
-    return Voxels[x + Dims.x * (y + Dims.y * z)];
+    return Voxels[z + y * Dims.z + x * Dims.y * Dims.z];
 }
 
 void SetVoxelValue(uint x, uint y, uint z, float value)
 {
-    Voxels[x + Dims.x * (y + Dims.y * z)] = value;
+    Voxels[z + y * Dims.z + x * Dims.y * Dims.z] = value;
 }
 
 float GetVoxelToughness(uint x, uint y, uint z)
 {
-    return VoxelToughness[x + Dims.x * (y + Dims.y * z)];
+    return VoxelToughness[z + y * Dims.z + x * Dims.y * Dims.z];
 }
 
 float4 VoxelValueWithGradient(uint3 i)
@@ -201,7 +201,7 @@ void Carve(uint3 id : SV_DispatchThreadID)
     if (length(ToolPosition - voxelPos) < ToolRange * ToolRange) {
         float voxelVal = GetVoxelValue(id.x, id.y, id.z);
         if(voxelVal > 0)
-            CollisionInfo[id.x + Dims.x * (id.y + Dims.y * id.z)] = GetVoxelToughness(id.x,id.y,id.z);
+            CollisionInfo[id.z + id.y * Dims.z + id.x * Dims.y * Dims.z] = GetVoxelToughness(id.x,id.y,id.z);
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
@@ -239,5 +239,5 @@ void ClearCollisionBuffer(uint3 id : SV_DispatchThreadID)
     // Boundary check
     if (any(id + 1 >= Dims.xyz)) return;
     
-    CollisionInfo[id.x + Dims.x * (id.y + Dims.y * id.z)] = 0.0;
+    CollisionInfo[id.z + id.y * Dims.z + id.x * Dims.y * Dims.z] = 0.0;
 }
