@@ -1,14 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MeshVoxelizer : MonoBehaviour
 {
-    [SerializeField] private Mesh mesh;
-    [SerializeField] private int resolution = 256;
-    [SerializeField] private bool enableSmoothing = false;
-    [SerializeField, Range(1, 10)] private int smoothingLevel = 1;
-    
     public struct Voxel_t
     {
         public Vector3 position;

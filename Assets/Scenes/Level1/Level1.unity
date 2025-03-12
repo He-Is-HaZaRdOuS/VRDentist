@@ -654,7 +654,7 @@ PrefabInstance:
       objectReference: {fileID: 5524750837946057284, guid: 895c874db30c11042b693ff0c7dcb316, type: 3}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: resolution
-      value: 400
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: capsuleTool
@@ -2067,6 +2067,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1749314238}
+  - component: {fileID: 1749314245}
   - component: {fileID: 1749314237}
   - component: {fileID: 1749314236}
   - component: {fileID: 1749314241}
@@ -2139,7 +2140,7 @@ Transform:
   m_GameObject: {fileID: 1749314235}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.225, y: 3.342, z: -0.062}
+  m_LocalPosition: {x: -0.824, y: 3.342, z: -0.667}
   m_LocalScale: {x: 0.03125, y: 0.085, z: 0.03125}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2360,6 +2361,20 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1749314245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1749314235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fb2267770c1cb4f8aad7ab4ac7f180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aeratorType: 1
+  power: 500
 --- !u!1001 &1803632642
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2459,6 +2474,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1973929028}
+  - component: {fileID: 1973929035}
   - component: {fileID: 1973929027}
   - component: {fileID: 1973929026}
   - component: {fileID: 1973929033}
@@ -2584,6 +2600,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1973929035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1973929025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fb2267770c1cb4f8aad7ab4ac7f180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aeratorType: 0
+  power: 500
 --- !u!1 &2051455014
 GameObject:
   m_ObjectHideFlags: 0
