@@ -654,7 +654,7 @@ PrefabInstance:
       objectReference: {fileID: 5524750837946057284, guid: 895c874db30c11042b693ff0c7dcb316, type: 3}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: resolution
-      value: 300
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: capsuleTool
@@ -2375,6 +2375,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   aeratorType: 1
   power: 500
+  debugCubePrefab: {fileID: 5524750837946057284, guid: 895c874db30c11042b693ff0c7dcb316, type: 3}
+  showDebugCubes: 1
 --- !u!1001 &1803632642
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2614,6 +2616,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   aeratorType: 0
   power: 500
+  debugCubePrefab: {fileID: 5524750837946057284, guid: 895c874db30c11042b693ff0c7dcb316, type: 3}
+  showDebugCubes: 1
 --- !u!1 &2051455014
 GameObject:
   m_ObjectHideFlags: 0

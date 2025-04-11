@@ -201,7 +201,10 @@ void Carve(uint3 id : SV_DispatchThreadID)
     if (length(ToolPosition - voxelPos) < ToolRange * ToolRange) {
         float voxelVal = GetVoxelValue(id.x, id.y, id.z);
         if(voxelVal > 0)
+        {
             CollisionInfo[id.z + id.y * Dims.z + id.x * Dims.y * Dims.z] = GetVoxelToughness(id.x,id.y,id.z);
+            CollisionInfo[0] = 1.0; // debug
+        }
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
@@ -226,7 +229,10 @@ void CarveCapsule(uint3 id : SV_DispatchThreadID)
         float voxelVal = GetVoxelValue(id.x, id.y, id.z);
         // if(voxelVal < -1.0) return;
         if(voxelVal > 0)
+        {
             CollisionInfo[id.z + id.y * Dims.z + id.x * Dims.y * Dims.z] = GetVoxelToughness(id.x,id.y,id.z);
+            CollisionInfo[0] = 1.0; // debug
+        }
         float carveAmount = (ToolPower * (1.0 - GetVoxelToughness(id.x,id.y,id.z))) / 1000.0;
         SetVoxelValue(id.x, id.y, id.z, voxelVal - carveAmount);
     }
