@@ -69,7 +69,7 @@ public class MeshVoxelizer : MonoBehaviour
     }
 
     // http://blog.wolfire.com/2009/11/Triangle-mesh-voxelization
-    public static float[,,] Voxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, float resolution)
+    public static float[,,] Voxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, float resolution, ref Vector2[,,]texCoords)
     {
         mesh.RecalculateBounds();
 
@@ -129,14 +129,15 @@ public class MeshVoxelizer : MonoBehaviour
             else
             {
                 uva = uvb = uvc = uv00;
+                Debug.Log("HERE");
             }
 
             var min = tri.bounds.min - start;
             var max = tri.bounds.max - start;
-            int iminX = Mathf.RoundToInt(min.x / voxelSize), iminY = Mathf.RoundToInt(min.y / voxelSize), iminZ = Mathf.RoundToInt(min.z / voxelSize);
-            int imaxX = Mathf.RoundToInt(max.x / voxelSize), imaxY = Mathf.RoundToInt(max.y / voxelSize), imaxZ = Mathf.RoundToInt(max.z / voxelSize);
-            // int iminX = Mathf.FloorToInt(min.x / voxelSize), iminY = Mathf.FloorToInt(min.y / voxelSize), iminZ = Mathf.FloorToInt(min.z / voxelSize);
-            // int imaxX = Mathf.CeilToInt(max.x / voxelSize), imaxY = Mathf.CeilToInt(max.y / voxelSize), imaxZ = Mathf.CeilToInt(max.z / voxelSize);
+            // int iminX = Mathf.RoundToInt(min.x / voxelSize), iminY = Mathf.RoundToInt(min.y / voxelSize), iminZ = Mathf.RoundToInt(min.z / voxelSize);
+            // int imaxX = Mathf.RoundToInt(max.x / voxelSize), imaxY = Mathf.RoundToInt(max.y / voxelSize), imaxZ = Mathf.RoundToInt(max.z / voxelSize);
+            int iminX = Mathf.FloorToInt(min.x / voxelSize), iminY = Mathf.FloorToInt(min.y / voxelSize), iminZ = Mathf.FloorToInt(min.z / voxelSize);
+            int imaxX = Mathf.CeilToInt(max.x / voxelSize), imaxY = Mathf.CeilToInt(max.y / voxelSize), imaxZ = Mathf.CeilToInt(max.z / voxelSize);
 
             iminX = Mathf.Clamp(iminX, 0, gridSize.x - 1);
             iminY = Mathf.Clamp(iminY, 0, gridSize.y - 1);
@@ -155,11 +156,12 @@ public class MeshVoxelizer : MonoBehaviour
                 {
                     for (int z = iminZ; z <= imaxZ; z++)
                     {
+                        volume[x, y, z].uv = tri.GetUV(volume[x, y, z].position, uva, uvb, uvc);
                         if (Intersects(tri, boxes[x, y, z]))
                         {
                             var voxel = volume[x, y, z];
                             voxel.position = boxes[x, y, z].center;
-                            voxel.uv = tri.GetUV(voxel.position, uva, uvb, uvc);
+                            // voxel.uv = tri.GetUV(voxel.position, uva, uvb, uvc);
                             if ((voxel.fill & 1) == 0)
                             {
                                 voxel.front = front;
@@ -230,11 +232,13 @@ public class MeshVoxelizer : MonoBehaviour
         
         var emptyVoxelCount = 0;
         var voxels = new float[gridSize.x, gridSize.y, gridSize.z];
+        texCoords = new Vector2[gridSize.x, gridSize.y, gridSize.z];
         for (var x = 0; x < gridSize.x; x++)
             for (var y = 0; y < gridSize.y; y++)
                 for (var z = 0; z < gridSize.z; z++)
                 {
                     voxels[x, y, z] = volume[x, y, z].IsEmpty() ? -1f : 1f;
+                    texCoords[x,y,z] = volume[x, y, z].uv;
                     if (volume[x, y, z].IsEmpty())
                         emptyVoxelCount++;
                 }
@@ -245,9 +249,9 @@ public class MeshVoxelizer : MonoBehaviour
         return voxels;
     }
 
-    public static float[,,] SmoothVoxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, int resolution, int smoothingLevel)
+    public static float[,,] SmoothVoxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, int resolution, int smoothingLevel, ref Vector2[,,]texCoords)
     {
-        float[,,] voxels = Voxelize(mesh, ref gridSize,ref voxelSize, resolution);
+        float[,,] voxels = Voxelize(mesh, ref gridSize,ref voxelSize, resolution, ref texCoords);
         if (smoothingLevel <= 0)
             return voxels;
         

@@ -7,12 +7,14 @@
 // Workaround for the absence of sizeof operator in HLSL
 #define SIZEOF_UINT 4
 #define SIZEOF_FLOAT3 12
+#define SIZEOF_FLOAT2 8
 
 // Object parameters
 uint3 Dims; // number of voxels
 float3 DestructiblePosition; // global position of the [0,0,0]'th voxel
 
 RWStructuredBuffer<float> Voxels;
+RWStructuredBuffer<float2> VoxelUV;
 RWStructuredBuffer<float> VoxelToughness;
 RWStructuredBuffer<float> CollisionInfo;
 
@@ -50,6 +52,11 @@ float GetVoxelValue(uint x, uint y, uint z)
     return Voxels[z + y * Dims.z + x * Dims.y * Dims.z];
 }
 
+float2 GetVoxelUV(uint x, uint y, uint z)
+{
+    return VoxelUV[z + y * Dims.z + x * Dims.y * Dims.z];
+}
+
 void SetVoxelValue(uint x, uint y, uint z, float value)
 {
     Voxels[z + y * Dims.z + x * Dims.y * Dims.z] = value;
@@ -75,12 +82,14 @@ float4 VoxelValueWithGradient(uint3 i)
 }
 
 // Vertex buffer accessor
-void WriteVertex(uint offset, float3 p, float3 n)
+void WriteVertex(uint offset, float3 p, float3 n, float2 uv)
 {
-    uint addr_p = offset * SIZEOF_FLOAT3 * 2;
+    uint addr_p = offset * (SIZEOF_FLOAT3 * 2 + SIZEOF_FLOAT2);
     uint addr_n = addr_p + SIZEOF_FLOAT3;
+    uint addr_uv = addr_n + SIZEOF_FLOAT3;
     VertexBuffer.Store3(addr_p, asuint(p));
     VertexBuffer.Store3(addr_n, asuint(n));
+    VertexBuffer.Store2(addr_uv, asuint(uv));
 }
 
 // Index buffer accessor
@@ -138,6 +147,7 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
     // including ones without an intersection.
     float3 vertices[12];
     float3 normals[12];
+    float2 uvs[12];
     for (i = 0; i < 12; i++)
     {
         uint2 pair = EdgeVertexPair(i);
@@ -147,6 +157,7 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
         float3 vertex2 = id + CubeVertex(pair.y);
         float param = (Isovalue - sample1.w) / (sample2.w - sample1.w);
         vertices[i] = TransformPoint(lerp(vertex1, vertex2, param));
+        uvs[i] = lerp(GetVoxelUV(vertex1.x, vertex1.y, vertex1.z), GetVoxelUV(vertex2.x, vertex2.y, vertex2.z), param);
         normals[i] = -normalize(lerp(sample1.xyz, sample2.xyz, param));
     }
 
@@ -163,9 +174,9 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
         if (count >= MaxTriangle) return;
 
         uint vidx = count * 3;
-        WriteVertex(vidx + 0, vertices[e1], normals[e1]);
-        WriteVertex(vidx + 1, vertices[e2], normals[e2]);
-        WriteVertex(vidx + 2, vertices[e3], normals[e3]);
+        WriteVertex(vidx + 0, vertices[e1], normals[e1], uvs[e1]);
+        WriteVertex(vidx + 1, vertices[e2], normals[e2], uvs[e2]);
+        WriteVertex(vidx + 2, vertices[e3], normals[e3], uvs[e3]);
         WriteIndices(vidx, uint3(vidx, vidx + 1, vidx + 2));
     }
 }
@@ -179,9 +190,9 @@ void ClearUnused(uint id : SV_DispatchThreadID)
         uint count = Counter.IncrementCounter();
         if (count >= MaxTriangle) break;
         uint vidx = count * 3;
-        WriteVertex(vidx + 0, 0, 0);
-        WriteVertex(vidx + 1, 0, 0);
-        WriteVertex(vidx + 2, 0, 0);
+        WriteVertex(vidx + 0, 0, 0,0);
+        WriteVertex(vidx + 1, 0, 0,0);
+        WriteVertex(vidx + 2, 0, 0,0);
         WriteIndices(vidx, uint3(0, 0, 0));
     }
 }

@@ -13,6 +13,7 @@ public class Tooth : MonoBehaviour
     public float lowFreq = 0.0f;
     public float highFreq = 0.0f;
     private ComputeBuffer voxelBuffer; // GPU
+    private ComputeBuffer voxelUVBuffer; // GPU
     private ComputeBuffer voxelToughnessBuffer; // GPU
     private ComputeBuffer collisionInfoBuffer; // GPU
     private float[] readBuffer = new float[32]; // CPU
@@ -41,7 +42,9 @@ public class Tooth : MonoBehaviour
 
     public void Start()
     {
-        var voxelData = MeshVoxelizer.SmoothVoxelize(_meshFilter.mesh, ref _gridSize, ref _voxelSize, resolution, 1);
+        transform.position += _meshFilter.mesh.bounds.center;
+        Vector2[,,] voxelUV = null;
+        var voxelData = MeshVoxelizer.SmoothVoxelize(_meshFilter.mesh, ref _gridSize, ref _voxelSize, resolution, 1, ref voxelUV);
         var voxelToughnessData = new float[_gridSize.x, _gridSize.y, _gridSize.z];
         for (int x = 0; x < _gridSize.x; x++)
             for (int y = 0; y < _gridSize.y; y++)
@@ -49,12 +52,15 @@ public class Tooth : MonoBehaviour
                     voxelToughnessData[x, y, z] = voxelData[x, y, z];
         
         voxelBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
+        voxelUVBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float)*2);
         collisionInfoBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
         voxelToughnessBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
         
         voxelBuffer.SetData(voxelData);
+        voxelUVBuffer.SetData(voxelUV);
         voxelToughnessBuffer.SetData(voxelToughnessData);
 
+        computeShader.SetBuffer(0, "VoxelUV", voxelUVBuffer);
         computeShader.SetBuffer(4, "CollisionInfo", collisionInfoBuffer);
         computeShader.SetBuffer(2, "Voxels", voxelBuffer);
         computeShader.SetBuffer(2, "CollisionInfo", collisionInfoBuffer);
@@ -106,6 +112,7 @@ public class Tooth : MonoBehaviour
     {
         builder.Dispose();
         voxelBuffer.Dispose();
+        voxelUVBuffer.Dispose();
         voxelToughnessBuffer.Dispose();
         collisionInfoBuffer.Dispose();
     }

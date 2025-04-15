@@ -119,9 +119,12 @@ namespace MarchingCubes
 
             // Vertex normal: float32 x 3
             var vn = new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32, 3);
+            
+            // Vertex uv (texture coordinate): float32 x 2
+            var vtc = new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2);
 
             // Vertex/index buffer formats
-            _mesh.SetVertexBufferParams(vertexCount, vp, vn);
+            _mesh.SetVertexBufferParams(vertexCount, attributes: new[]{vp, vn, vtc});
             _mesh.SetIndexBufferParams(vertexCount, IndexFormat.UInt32);
 
             // Submesh initialization

@@ -612,6 +612,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 025c22746102d7f40a5724704bafa150, type: 2}
+    - target: {fileID: 4486378112192057284, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 4785754292765555175, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: m_Name
       value: Tooth
@@ -654,7 +658,7 @@ PrefabInstance:
       objectReference: {fileID: 5524750837946057284, guid: 895c874db30c11042b693ff0c7dcb316, type: 3}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: resolution
-      value: 100
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 6299834265205870661, guid: d544a21bbf41262499e61ee0667f2757, type: 3}
       propertyPath: capsuleTool
