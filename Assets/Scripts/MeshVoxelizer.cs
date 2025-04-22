@@ -129,7 +129,6 @@ public class MeshVoxelizer : MonoBehaviour
             else
             {
                 uva = uvb = uvc = uv00;
-                Debug.Log("HERE");
             }
 
             var min = tri.bounds.min - start;
@@ -156,12 +155,12 @@ public class MeshVoxelizer : MonoBehaviour
                 {
                     for (int z = iminZ; z <= imaxZ; z++)
                     {
-                        volume[x, y, z].uv = tri.GetUV(volume[x, y, z].position, uva, uvb, uvc);
+                        // volume[x, y, z].uv = tri.GetUV(volume[x, y, z].position, uva, uvb, uvc);
                         if (Intersects(tri, boxes[x, y, z]))
                         {
                             var voxel = volume[x, y, z];
                             voxel.position = boxes[x, y, z].center;
-                            // voxel.uv = tri.GetUV(voxel.position, uva, uvb, uvc);
+                            voxel.uv = tri.GetUV(voxel.position, uva, uvb, uvc);
                             if ((voxel.fill & 1) == 0)
                             {
                                 voxel.front = front;
@@ -238,7 +237,7 @@ public class MeshVoxelizer : MonoBehaviour
                 for (var z = 0; z < gridSize.z; z++)
                 {
                     voxels[x, y, z] = volume[x, y, z].IsEmpty() ? -1f : 1f;
-                    texCoords[x,y,z] = volume[x, y, z].uv;
+                    texCoords[x,y,z] = volume[x, y, z].IsEmpty() ? GetUVFromNeighbour(volume,x,y,z, gridSize) : volume[x, y, z].uv;
                     if (volume[x, y, z].IsEmpty())
                         emptyVoxelCount++;
                 }
@@ -297,6 +296,24 @@ public class MeshVoxelizer : MonoBehaviour
                 }
             }
         }
+    }
+
+    private static Vector2 GetUVFromNeighbour(Voxel_t[,,] voxels, int x, int y, int z, Vector3Int dim)
+    {
+        Vector2 average = Vector2.zero;
+        int samples = 0;
+        for (int i = -1; i < 2; i++)
+            for (int j = -1; j < 2; j++)
+                for (int k = -1; k < 2; k++)
+                    if (!(i == 0 && j == 0 && k == 0) &&
+                        x+i < dim.x && y+j < dim.y && z+k < dim.z &&
+                        x+i > 0 && y+j > 0 && z+k > 0 && 
+                        !voxels[x + i, y + j, z + k].IsEmpty())
+                    {
+                        samples++;
+                        average += voxels[x + i, y + j, z + k].uv;
+                    }
+        return average / samples;
     }
 
     public static bool Intersects(Triangle tri, Bounds aabb)

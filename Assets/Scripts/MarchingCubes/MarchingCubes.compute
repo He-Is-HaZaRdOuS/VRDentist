@@ -156,8 +156,10 @@ void MeshReconstruction(uint3 id : SV_DispatchThreadID)
         float3 vertex1 = id + CubeVertex(pair.x);
         float3 vertex2 = id + CubeVertex(pair.y);
         float param = (Isovalue - sample1.w) / (sample2.w - sample1.w);
+        float3 mid_point = lerp(vertex1, vertex2, param);
+        float3 rounded_clamped = clamp(round(mid_point),float3(0,0,0), Dims);
         vertices[i] = TransformPoint(lerp(vertex1, vertex2, param));
-        uvs[i] = lerp(GetVoxelUV(vertex1.x, vertex1.y, vertex1.z), GetVoxelUV(vertex2.x, vertex2.y, vertex2.z), param);
+        uvs[i] = GetVoxelUV(rounded_clamped.x, rounded_clamped.y, rounded_clamped.z);
         normals[i] = -normalize(lerp(sample1.xyz, sample2.xyz, param));
     }
 
