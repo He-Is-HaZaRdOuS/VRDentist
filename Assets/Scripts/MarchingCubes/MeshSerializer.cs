@@ -1,5 +1,8 @@
 using System.IO;
+using System.IO.Compression;
 using UnityEngine;
+using K4os.Compression.LZ4;
+using K4os.Compression.LZ4.Streams;
 
 namespace MarchingCubes
 {
@@ -9,8 +12,10 @@ namespace MarchingCubes
                                 float[,,] voxels, Vector2[,,] texCoords)
         {
             string path = Path.Combine(Application.persistentDataPath, key + ".vox");
-            using var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
-            using var bw = new BinaryWriter(fs);
+            using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            // Wrap in LZ4 compression stream
+            using var lz4 = LZ4Stream.Encode(fs, LZ4Level.L00_FAST);
+            using var bw = new BinaryWriter(lz4);
 
             // header
             bw.Write(gridSize.x); bw.Write(gridSize.y); bw.Write(gridSize.z);
@@ -52,7 +57,8 @@ namespace MarchingCubes
             }
 
             using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
-            using var br = new BinaryReader(fs);
+            using var lz4 = LZ4Stream.Decode(fs);
+            using var br = new BinaryReader(lz4);
 
             int x = br.ReadInt32();
             int y = br.ReadInt32();
