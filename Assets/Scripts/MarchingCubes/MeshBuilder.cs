@@ -9,6 +9,15 @@ namespace MarchingCubes
     //
     sealed class MeshBuilder : System.IDisposable
     {
+        private static readonly int MaxTriangle = Shader.PropertyToID("MaxTriangle");
+        private static readonly int Scale = Shader.PropertyToID("Scale");
+        private static readonly int Isovalue = Shader.PropertyToID("Isovalue");
+        private static readonly int TriangleTable = Shader.PropertyToID("TriangleTable");
+        private static readonly int Voxels = Shader.PropertyToID("Voxels");
+        private static readonly int VertexBuffer = Shader.PropertyToID("VertexBuffer");
+        private static readonly int IndexBuffer = Shader.PropertyToID("IndexBuffer");
+        private static readonly int Counter = Shader.PropertyToID("Counter");
+
         #region Public members
 
         public Mesh Mesh => _mesh;
@@ -54,20 +63,20 @@ namespace MarchingCubes
 
             // Isosurface reconstruction
             _compute.SetInts("Dims", _grids);
-            _compute.SetInt("MaxTriangle", _triangleBudget);
-            _compute.SetFloat("Scale", scale);
-            _compute.SetFloat("Isovalue", target);
-            _compute.SetBuffer(0, "TriangleTable", _triangleTable);
-            _compute.SetBuffer(0, "Voxels", voxels);
-            _compute.SetBuffer(0, "VertexBuffer", _vertexBuffer);
-            _compute.SetBuffer(0, "IndexBuffer", _indexBuffer);
-            _compute.SetBuffer(0, "Counter", _counterBuffer);
+            _compute.SetInt(MaxTriangle, _triangleBudget);
+            _compute.SetFloat(Scale, scale);
+            _compute.SetFloat(Isovalue, target);
+            _compute.SetBuffer(0, TriangleTable, _triangleTable);
+            _compute.SetBuffer(0, Voxels, voxels);
+            _compute.SetBuffer(0, VertexBuffer, _vertexBuffer);
+            _compute.SetBuffer(0, IndexBuffer, _indexBuffer);
+            _compute.SetBuffer(0, Counter, _counterBuffer);
             _compute.DispatchThreads(0, _grids);
 
             // Clear unused area of the buffers.
-            _compute.SetBuffer(1, "VertexBuffer", _vertexBuffer);
-            _compute.SetBuffer(1, "IndexBuffer", _indexBuffer);
-            _compute.SetBuffer(1, "Counter", _counterBuffer);
+            _compute.SetBuffer(1, VertexBuffer, _vertexBuffer);
+            _compute.SetBuffer(1, IndexBuffer, _indexBuffer);
+            _compute.SetBuffer(1, Counter, _counterBuffer);
             _compute.DispatchThreads(1, 1024, 1, 1);
 
             // Bounding box

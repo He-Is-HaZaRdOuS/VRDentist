@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Managers;
 using MarchingCubes;
 using UnityEngine;
 
@@ -7,6 +8,19 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class Tooth : MonoBehaviour
 {
+    private static readonly int VoxelUV = Shader.PropertyToID("VoxelUV");
+    private static readonly int CollisionInfo = Shader.PropertyToID("CollisionInfo");
+    private static readonly int Voxels = Shader.PropertyToID("Voxels");
+    private static readonly int VoxelToughness = Shader.PropertyToID("VoxelToughness");
+    private static readonly int ToolPower = Shader.PropertyToID("ToolPower");
+    private static readonly int ToolPosition = Shader.PropertyToID("ToolPosition");
+    private static readonly int ToolRange = Shader.PropertyToID("ToolRange");
+    private static readonly int Scale = Shader.PropertyToID("Scale");
+    private static readonly int DestructiblePosition = Shader.PropertyToID("DestructiblePosition");
+    private static readonly int CapsuleToolA = Shader.PropertyToID("capsuleToolA");
+    private static readonly int CapsuleToolB = Shader.PropertyToID("capsuleToolB");
+    private static readonly int CapsuleToolRange = Shader.PropertyToID("capsuleToolRange");
+    
     [SerializeField] private ComputeShader computeShader = null;
     [SerializeField] private int resolution = 128;
     private float triggerValue = 0.0f;
@@ -102,16 +116,16 @@ public class Tooth : MonoBehaviour
         int kCarveCapsule    = computeShader.FindKernel("CarveCapsule");
         int kClearColl       = computeShader.FindKernel("ClearCollisionBuffer");
 
-        computeShader.SetBuffer(kMeshReconstruct, "VoxelUV", voxelUVBuffer);
-        computeShader.SetBuffer(kClearColl,        "CollisionInfo",   collisionInfoBuffer);
+        computeShader.SetBuffer(kMeshReconstruct, VoxelUV, voxelUVBuffer);
+        computeShader.SetBuffer(kClearColl,        CollisionInfo,   collisionInfoBuffer);
 
-        computeShader.SetBuffer(kCarve,            "Voxels",          voxelBuffer);
-        computeShader.SetBuffer(kCarve,            "VoxelToughness",  voxelToughnessBuffer);
-        computeShader.SetBuffer(kCarve,            "CollisionInfo",   collisionInfoBuffer);
+        computeShader.SetBuffer(kCarve,            Voxels,          voxelBuffer);
+        computeShader.SetBuffer(kCarve,            VoxelToughness,  voxelToughnessBuffer);
+        computeShader.SetBuffer(kCarve,            CollisionInfo,   collisionInfoBuffer);
 
-        computeShader.SetBuffer(kCarveCapsule,     "Voxels",          voxelBuffer);
-        computeShader.SetBuffer(kCarveCapsule,     "VoxelToughness",  voxelToughnessBuffer);
-        computeShader.SetBuffer(kCarveCapsule,     "CollisionInfo",   collisionInfoBuffer);
+        computeShader.SetBuffer(kCarveCapsule,     Voxels,          voxelBuffer);
+        computeShader.SetBuffer(kCarveCapsule,     VoxelToughness,  voxelToughnessBuffer);
+        computeShader.SetBuffer(kCarveCapsule,     CollisionInfo,   collisionInfoBuffer);
 
         // Initialize mesh builder and build initial mesh
         builder = new MeshBuilder(_gridSize, 1000000, computeShader);
@@ -164,18 +178,18 @@ public class Tooth : MonoBehaviour
 
     private void SetToolPower(AeratorTip aerator)
     {
-        computeShader.SetFloat("ToolPower", aerator.Power * triggerValue);
+        computeShader.SetFloat(ToolPower, aerator.Power * triggerValue);
     }
 
     private void CarveSphere(AeratorTip aerator)
     {
         var tp = aerator.Transform.position;
         var dp = transform.position - CenterOffset;
-        computeShader.SetFloats("ToolPosition", tp.x, tp.y, tp.z);
-        computeShader.SetFloat("ToolRange", 0.125f);
-        computeShader.SetFloat("Scale", VoxelSize);
+        computeShader.SetFloats(ToolPosition, tp.x, tp.y, tp.z);
+        computeShader.SetFloat(ToolRange, 0.125f);
+        computeShader.SetFloat(Scale, VoxelSize);
         SetToolPower(aerator);
-        computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
+        computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(2, _gridSize.x, _gridSize.y, _gridSize.z);
         
         // var voxelIndex = GlobalPositionToVoxelIndex(tp);
@@ -206,12 +220,12 @@ public class Tooth : MonoBehaviour
         // Debug.Log($"TopTip: {topTip}, BottomTip: {bottomTip}, Capsule Rotation: {transform.rotation}");
 
         SetToolPower(aerator);
-        computeShader.SetFloats("capsuleToolA", topTip.x, topTip.y, topTip.z);
-        computeShader.SetFloats("capsuleToolB", bottomTip.x, bottomTip.y, bottomTip.z);
-        computeShader.SetFloat("capsuleToolRange", ts.y); // used to be 0.125f
+        computeShader.SetFloats(CapsuleToolA, topTip.x, topTip.y, topTip.z);
+        computeShader.SetFloats(CapsuleToolB, bottomTip.x, bottomTip.y, bottomTip.z);
+        computeShader.SetFloat(CapsuleToolRange, ts.y); // used to be 0.125f
 
-        computeShader.SetFloat("Scale", VoxelSize);
-        computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
+        computeShader.SetFloat(Scale, VoxelSize);
+        computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(3, _gridSize.x, _gridSize.y, _gridSize.z);
 
         // var voxelIndex = GlobalPositionToVoxelIndex(tp);

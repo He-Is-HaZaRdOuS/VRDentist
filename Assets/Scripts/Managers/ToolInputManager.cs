@@ -1,189 +1,178 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
 
-public class ToolInputManager : MonoBehaviour
+namespace Managers
 {
-    public static ToolInputManager instance;
-
-    [Header("Tool Input")]
-    [SerializeField] private List<Aerator> aerators;
-
-    [Header("Materials")]
-    [SerializeField] private Material activeMaterial; // Material for active aerator (green)
-    [SerializeField] private Material defaultMaterial; // Material for inactive aerators (black)
-
-    [Header("Tool Movement")]
-    [SerializeField] private float toolMovementSpeed = 1f;
-
-    private int maxAeratorIndex = 0;
-    private int activeAeratorIndex = 0;
-    private Vector2 rotation;
-    private Vector3 movementDirection;
-    public float RightTriggerValue = 0.0f;
-    public float LeftTriggerValue = 0.0f;
-
-    private void Awake()
+    public class ToolInputManager : MonoBehaviour
     {
-        if (instance == null)
+        public static ToolInputManager instance;
+
+        [Header("Tool Input")]
+        [SerializeField] private List<Aerator> aerators = new List<Aerator>();
+
+        [Header("Materials")]
+        [SerializeField] private Material activeMaterial;
+        [SerializeField] private Material defaultMaterial;
+
+        [Header("Tool Movement")]
+        [SerializeField] private float toolMovementSpeed = 1f;
+
+        private Camera mainCamera;
+        private List<Renderer> aeratorRenderers = new List<Renderer>();
+        private int activeAeratorIndex = 0;
+        private int prevActiveIndex = -1;
+        private Vector2 rotation;
+        private Vector3 movementDirection;
+        public float RightTriggerValue { get; private set; }
+        public float LeftTriggerValue { get; private set; }
+
+        private void Awake()
         {
-            instance = this;
-        }
-    }
-
-    void Start()
-    {
-        if (aerators.Count <= 0)
-        {
-            Debug.LogError("No aerators found in the scene!");
-            return;
-        }
-    }
-
-    void Update()
-    {
-
-    }
-
-    void LateUpdate()
-    {
-        if (aerators.Count <= 0)
-        {
-            return;
+            if (instance == null) instance = this;
+            mainCamera = Camera.main;
         }
 
-        // === Tool Activation ===
-        // Change the material of the active aerator to green and others to black
-        for (int i = 0; i < maxAeratorIndex; i++)
+        private void Start()
         {
-            Renderer renderer = aerators[i].GetComponent<Renderer>();
-            if (renderer != null)
+            // Cache renderers
+        
+            // Cache renderers (on self or children)
+            aeratorRenderers.Clear();
+            foreach (var aer in aerators)
             {
-                renderer.material = (i == activeAeratorIndex) ? activeMaterial : defaultMaterial;
+                Renderer rend = aer.GetComponent<Renderer>();
+                if (rend == null) rend = aer.GetComponentInChildren<Renderer>();
+                aeratorRenderers.Add(rend);
+            }
+
+            // Initialize visuals
+            UpdateActiveVisual();
+            UpdateActiveVisual();
+        }
+
+        private void LateUpdate()
+        {
+            if (aerators.Count == 0) return;
+
+            // Update active aerator material if changed
+            if (prevActiveIndex != activeAeratorIndex)
+            {
+                UpdateActiveVisual();
+            }
+
+            // Movement aligned to camera XZ plane
+            if (movementDirection.x != 0f || movementDirection.z != 0f)
+            {
+                Vector3 camF = mainCamera.transform.forward;
+                Vector3 camR = mainCamera.transform.right;
+                camF.y = 0; camR.y = 0;
+                camF.Normalize(); camR.Normalize();
+
+                Vector3 worldDir = camR * movementDirection.x + camF * movementDirection.z;
+                aerators[activeAeratorIndex].transform.position += worldDir * (toolMovementSpeed * Time.deltaTime);
+            }
+            // Y-axis movement
+            if (movementDirection.y != 0f)
+            {
+                aerators[activeAeratorIndex].transform.Translate(
+                    Vector3.up * (movementDirection.y * toolMovementSpeed * Time.deltaTime),
+                    Space.World);
+            }
+
+            // Tool rotation (local)
+            var activeTrans = aerators[activeAeratorIndex].transform;
+            activeTrans.Rotate(rotation.y * toolMovementSpeed, 0f, 0f, Space.Self);
+            activeTrans.Rotate(0f, 0f, rotation.x * toolMovementSpeed, Space.Self);
+        }
+
+        private void UpdateActiveVisual()
+        {
+            // reset previous
+            if (prevActiveIndex >= 0 && prevActiveIndex < aeratorRenderers.Count)
+            {
+                var prevR = aeratorRenderers[prevActiveIndex];
+                if (prevR != null) prevR.material = defaultMaterial;
+            }
+            // set new
+            var currentR = aeratorRenderers[activeAeratorIndex];
+            if (currentR != null) currentR.material = activeMaterial;
+
+            prevActiveIndex = activeAeratorIndex;
+        }
+
+        public void RegisterAerator(Aerator aerator)
+        {
+            if (!aerators.Contains(aerator))
+            {
+                aerators.Add(aerator);
+                aeratorRenderers.Add(aerator.GetComponent<Renderer>());
             }
         }
 
-        // === Tool Translation ===
-        // Translate the tool in world coordinates to make it independent of its rotation
-        aerators[activeAeratorIndex].transform.Translate(movementDirection * toolMovementSpeed * Time.deltaTime, Space.World);
-
-        // === Tool Rotation ===
-        // Rotate the tool around its local axes (X and Z) based on input
-        aerators[activeAeratorIndex].transform.Rotate(rotation.y * toolMovementSpeed, 0, 0, Space.Self); // Rotate around X-axis
-        aerators[activeAeratorIndex].transform.Rotate(0, 0, rotation.x * toolMovementSpeed, Space.Self); // Rotate around Z-axis
-    }
-
-    public void RegisterAerator(Aerator aerator)
-    {
-        if (!aerators.Contains(aerator))
+        public void UnregisterAerator(Aerator aerator)
         {
-            aerators.Add(aerator);
-            maxAeratorIndex = aerators.Count;
-        }
-    }
-
-    public void UnregisterAerator(Aerator aerator)
-    {
-        if (aerators.Contains(aerator))
-        {
-            aerators.Remove(aerator);
-            maxAeratorIndex = aerators.Count;
-        }
-    }
-
-    public void SetMaxAeratorCount()
-    {
-        maxAeratorIndex = aerators.Count;
-    }
-
-    public void YawPitchRotation(InputAction.CallbackContext context)
-    {
-        rotation = context.ReadValue<Vector2>();
-    }
-
-    public void XZMovement(InputAction.CallbackContext context)
-    {
-        movementDirection.x = context.ReadValue<Vector2>().x;
-        movementDirection.z = context.ReadValue<Vector2>().y;
-    }
-
-    public void YMovement(InputAction.CallbackContext context)
-    {
-        movementDirection.y = context.ReadValue<float>();
-    }
-
-    public void ToolRotationPower(InputAction.CallbackContext context)
-    {
-        float rawValue = context.ReadValue<float>();
-
-        // Apply deadzone
-        const float deadzoneThreshold = 0.1f;
-        RightTriggerValue = Mathf.Abs(rawValue) > deadzoneThreshold ? rawValue : 0f;
-
-        // Use the adjusted value for rumble
-        RumbleManager.instance.SetTriggerRumble(RightTriggerValue / 5.0f);
-    }
-
-    public void ToolMovementSpeed(InputAction.CallbackContext context)
-    {
-        float rawValue = context.ReadValue<float>();
-
-        // Invert
-        LeftTriggerValue = 1.0f - rawValue;
-        toolMovementSpeed = LeftTriggerValue;
-    }
-
-    public void DPad(InputAction.CallbackContext context)
-    {
-        Vector2 dPadValue = context.ReadValue<Vector2>();
-        if (!context.performed)
-        {
-            return;
+            int idx = aerators.IndexOf(aerator);
+            if (idx >= 0)
+            {
+                aerators.RemoveAt(idx);
+                aeratorRenderers.RemoveAt(idx);
+                if (activeAeratorIndex >= aerators.Count)
+                    activeAeratorIndex = aerators.Count - 1;
+            }
         }
 
-        if (dPadValue.x > 0)
+        public void YawPitchRotation(InputAction.CallbackContext ctx)
         {
-            CycleAeratorForward();
+            rotation = ctx.ReadValue<Vector2>();
         }
-        else if (dPadValue.x < 0)
+
+        public void XZMovement(InputAction.CallbackContext ctx)
         {
-            CycleAeratorBackward();
+            var v = ctx.ReadValue<Vector2>();
+            movementDirection.x = v.x;
+            movementDirection.z = v.y;
         }
-        else if (dPadValue.y > 0)
+
+        public void YMovement(InputAction.CallbackContext ctx)
         {
-            IncrementToolMovementSpeed();
+            movementDirection.y = ctx.ReadValue<float>();
         }
-        else if (dPadValue.y < 0)
+
+        public void ToolRotationPower(InputAction.CallbackContext ctx)
         {
-            DecrementToolMovementSpeed();
+            const float deadzone = 0.1f;
+            float raw = ctx.ReadValue<float>();
+            RightTriggerValue = Mathf.Abs(raw) > deadzone ? raw : 0f;
+            RumbleManager.instance.SetTriggerRumble(RightTriggerValue / 5f);
         }
-    }
 
-    public void CycleAeratorForward()
-    {
-        // Increment the index and wrap around to 0 if it exceeds the max index
-        activeAeratorIndex = (activeAeratorIndex + 1) % maxAeratorIndex;
-        Debug.Log("Active Aerator: " + activeAeratorIndex);
-    }
+        public void ToolMovementSpeed(InputAction.CallbackContext ctx)
+        {
+            float raw = ctx.ReadValue<float>();
+            LeftTriggerValue = 1f - raw;
+            toolMovementSpeed = LeftTriggerValue;
+        }
 
-    public void CycleAeratorBackward()
-    {
-        // Decrement the index and wrap around to the max index if it goes below 0
-        activeAeratorIndex = (activeAeratorIndex - 1 + maxAeratorIndex) % maxAeratorIndex;
-        Debug.Log("Active Aerator: " + activeAeratorIndex);
-    }
+        public void DPad(InputAction.CallbackContext ctx)
+        {
+            if (!ctx.performed) return;
+            var d = ctx.ReadValue<Vector2>();
+            if (d.x > 0) CycleAeratorForward();
+            else if (d.x < 0) CycleAeratorBackward();
+            else if (d.y > 0) IncrementToolMovementSpeed();
+            else if (d.y < 0) DecrementToolMovementSpeed();
+        }
 
-    public void IncrementToolMovementSpeed()
-    {
-        toolMovementSpeed += 0.1f;
-        toolMovementSpeed = Mathf.Clamp(toolMovementSpeed, 0.1f, 1.0f);
-    }
-
-    public void DecrementToolMovementSpeed()
-    {
-        toolMovementSpeed -= 0.1f;
-        toolMovementSpeed = Mathf.Clamp(toolMovementSpeed, 0.1f, 1.0f);
+        public void CycleAeratorForward()
+        {
+            activeAeratorIndex = (activeAeratorIndex + 1) % aerators.Count;
+        }
+        public void CycleAeratorBackward()
+        {
+            activeAeratorIndex = (activeAeratorIndex - 1 + aerators.Count) % aerators.Count;
+        }
+        public void IncrementToolMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, 1f);
+        public void DecrementToolMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, 1f);
     }
 }

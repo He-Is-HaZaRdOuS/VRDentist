@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Managers;
 using UnityEngine;
 
 public class Aerator : MonoBehaviour
@@ -19,9 +20,5 @@ public class Aerator : MonoBehaviour
             ToolInputManager.instance.UnregisterAerator(this);
         }
     }
-
-    void Start()
-    {
-        ToolInputManager.instance.SetMaxAeratorCount();
-    }
+    
 }
