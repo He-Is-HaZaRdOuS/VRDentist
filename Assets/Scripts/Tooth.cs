@@ -1,12 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Managers;
+using Controllers;
 using MarchingCubes;
+using Utils;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
 public class Tooth : MonoBehaviour
 {
+    private static readonly int VoxelUV = Shader.PropertyToID("VoxelUV");
+    private static readonly int CollisionInfo = Shader.PropertyToID("CollisionInfo");
+    private static readonly int Voxels = Shader.PropertyToID("Voxels");
+    private static readonly int VoxelToughness = Shader.PropertyToID("VoxelToughness");
+    private static readonly int ToolPower = Shader.PropertyToID("ToolPower");
+    private static readonly int ToolPosition = Shader.PropertyToID("ToolPosition");
+    private static readonly int ToolRange = Shader.PropertyToID("ToolRange");
+    private static readonly int Scale = Shader.PropertyToID("Scale");
+    private static readonly int DestructiblePosition = Shader.PropertyToID("DestructiblePosition");
+    private static readonly int CapsuleToolA = Shader.PropertyToID("capsuleToolA");
+    private static readonly int CapsuleToolB = Shader.PropertyToID("capsuleToolB");
+    private static readonly int CapsuleToolRange = Shader.PropertyToID("capsuleToolRange");
+    
     [SerializeField] private ComputeShader computeShader = null;
     [SerializeField] private int resolution = 128;
     private float triggerValue = 0.0f;
@@ -18,6 +35,11 @@ public class Tooth : MonoBehaviour
     private ComputeBuffer collisionInfoBuffer; // GPU
     private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
+    
+    // serialization related fields
+    private string _modelKey;
+    private float[,,] _voxelData3D;
+    private Vector2[,,] _voxelUV3D;
     
     private MeshFilter _meshFilter;
     private AeratorTip[] _aerators;
@@ -40,35 +62,78 @@ public class Tooth : MonoBehaviour
         _aerators = FindObjectsOfType<AeratorTip>();
     }
 
-    public void Start()
+        public void Start()
     {
+        // adjust pivot
         transform.position += _meshFilter.mesh.bounds.center;
-        Vector2[,,] voxelUV = null;
-        var voxelData = MeshVoxelizer.SmoothVoxelize(_meshFilter.mesh, ref _gridSize, ref _voxelSize, resolution, 1, ref voxelUV);
-        var voxelToughnessData = new float[_gridSize.x, _gridSize.y, _gridSize.z];
+
+        // Attempt to load cached voxel grid + UVs
+        _modelKey = gameObject.name;
+
+        if (!MeshSerializer.Load(_modelKey, out _gridSize, out _voxelSize, out _voxelData3D, out _voxelUV3D))
+        {
+            // No cache: voxelize and save
+            _voxelData3D = MeshVoxelizer.SmoothVoxelize(
+                _meshFilter.mesh,
+                ref _gridSize,
+                ref _voxelSize,
+                resolution,
+                1,
+                ref _voxelUV3D
+            );
+            MeshSerializer.SaveAsync(_modelKey, _gridSize, _voxelSize, _voxelData3D, _voxelUV3D);
+            Debug.Log($"Voxelized and cached model '{_modelKey}'");
+        }
+        else
+        {
+            Debug.Log($"Loaded cached voxel data for model '{_modelKey}'");
+        }
+
+        // Flatten 3D arrays into 1D for GPU buffers
+        int count = _gridSize.x * _gridSize.y * _gridSize.z;
+        var voxels1D          = new float[count];
+        var uvs1D             = new Vector2[count];
+        var toughness1D       = new float[count];
+
+        int idx = 0;
         for (int x = 0; x < _gridSize.x; x++)
             for (int y = 0; y < _gridSize.y; y++)
                 for (int z = 0; z < _gridSize.z; z++)
-                    voxelToughnessData[x, y, z] = voxelData[x, y, z];
-        
-        voxelBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
-        voxelUVBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float)*2);
-        collisionInfoBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
-        voxelToughnessBuffer = new ComputeBuffer(_gridSize.x * _gridSize.y * _gridSize.z, sizeof(float));
-        
-        voxelBuffer.SetData(voxelData);
-        voxelUVBuffer.SetData(voxelUV);
-        voxelToughnessBuffer.SetData(voxelToughnessData);
+                {
+                    voxels1D[idx]      = _voxelData3D[x, y, z];
+                    uvs1D[idx]         = _voxelUV3D[x, y, z];
+                    toughness1D[idx++] = _voxelData3D[x, y, z];
+                }
 
-        computeShader.SetBuffer(0, "VoxelUV", voxelUVBuffer);
-        computeShader.SetBuffer(4, "CollisionInfo", collisionInfoBuffer);
-        computeShader.SetBuffer(2, "Voxels", voxelBuffer);
-        computeShader.SetBuffer(2, "CollisionInfo", collisionInfoBuffer);
-        computeShader.SetBuffer(2, "VoxelToughness", voxelToughnessBuffer);
-        computeShader.SetBuffer(3, "Voxels", voxelBuffer);
-        computeShader.SetBuffer(3, "CollisionInfo", collisionInfoBuffer);
-        computeShader.SetBuffer(3, "VoxelToughness", voxelToughnessBuffer);
+        // Create and upload compute buffers
+        int totalVoxels = count;
+        voxelBuffer         = new ComputeBuffer(totalVoxels, sizeof(float));
+        voxelUVBuffer       = new ComputeBuffer(totalVoxels, sizeof(float) * 2);
+        collisionInfoBuffer = new ComputeBuffer(totalVoxels, sizeof(float));
+        voxelToughnessBuffer= new ComputeBuffer(totalVoxels, sizeof(float));
 
+        voxelBuffer.SetData(voxels1D);
+        voxelUVBuffer.SetData(uvs1D);
+        voxelToughnessBuffer.SetData(toughness1D);
+
+        // Bind buffers (use cached kernel indices or FindKernel)
+        int kMeshReconstruct = computeShader.FindKernel("MeshReconstruction");
+        int kCarve           = computeShader.FindKernel("Carve");
+        int kCarveCapsule    = computeShader.FindKernel("CarveCapsule");
+        int kClearColl       = computeShader.FindKernel("ClearCollisionBuffer");
+
+        computeShader.SetBuffer(kMeshReconstruct, VoxelUV, voxelUVBuffer);
+        computeShader.SetBuffer(kClearColl,        CollisionInfo,   collisionInfoBuffer);
+
+        computeShader.SetBuffer(kCarve,            Voxels,          voxelBuffer);
+        computeShader.SetBuffer(kCarve,            VoxelToughness,  voxelToughnessBuffer);
+        computeShader.SetBuffer(kCarve,            CollisionInfo,   collisionInfoBuffer);
+
+        computeShader.SetBuffer(kCarveCapsule,     Voxels,          voxelBuffer);
+        computeShader.SetBuffer(kCarveCapsule,     VoxelToughness,  voxelToughnessBuffer);
+        computeShader.SetBuffer(kCarveCapsule,     CollisionInfo,   collisionInfoBuffer);
+
+        // Initialize mesh builder and build initial mesh
         builder = new MeshBuilder(_gridSize, 1000000, computeShader);
         BuildMesh();
     }
@@ -119,18 +184,18 @@ public class Tooth : MonoBehaviour
 
     private void SetToolPower(AeratorTip aerator)
     {
-        computeShader.SetFloat("ToolPower", aerator.Power * triggerValue);
+        computeShader.SetFloat(ToolPower, aerator.Power * triggerValue);
     }
 
     private void CarveSphere(AeratorTip aerator)
     {
         var tp = aerator.Transform.position;
         var dp = transform.position - CenterOffset;
-        computeShader.SetFloats("ToolPosition", tp.x, tp.y, tp.z);
-        computeShader.SetFloat("ToolRange", 0.125f);
-        computeShader.SetFloat("Scale", VoxelSize);
+        computeShader.SetFloats(ToolPosition, tp.x, tp.y, tp.z);
+        computeShader.SetFloat(ToolRange, 0.125f);
+        computeShader.SetFloat(Scale, VoxelSize);
         SetToolPower(aerator);
-        computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
+        computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(2, _gridSize.x, _gridSize.y, _gridSize.z);
         
         // var voxelIndex = GlobalPositionToVoxelIndex(tp);
@@ -161,12 +226,12 @@ public class Tooth : MonoBehaviour
         // Debug.Log($"TopTip: {topTip}, BottomTip: {bottomTip}, Capsule Rotation: {transform.rotation}");
 
         SetToolPower(aerator);
-        computeShader.SetFloats("capsuleToolA", topTip.x, topTip.y, topTip.z);
-        computeShader.SetFloats("capsuleToolB", bottomTip.x, bottomTip.y, bottomTip.z);
-        computeShader.SetFloat("capsuleToolRange", ts.y); // used to be 0.125f
+        computeShader.SetFloats(CapsuleToolA, topTip.x, topTip.y, topTip.z);
+        computeShader.SetFloats(CapsuleToolB, bottomTip.x, bottomTip.y, bottomTip.z);
+        computeShader.SetFloat(CapsuleToolRange, ts.y); // used to be 0.125f
 
-        computeShader.SetFloat("Scale", VoxelSize);
-        computeShader.SetFloats("DestructiblePosition", dp.x, dp.y, dp.z);
+        computeShader.SetFloat(Scale, VoxelSize);
+        computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(3, _gridSize.x, _gridSize.y, _gridSize.z);
 
         // var voxelIndex = GlobalPositionToVoxelIndex(tp);
@@ -196,5 +261,20 @@ public class Tooth : MonoBehaviour
     {
         collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
         return readBuffer[0] > 0;
+    }
+    
+    public void SaveState()
+    {
+        // 1) Save voxels
+        string baseName = $"{_modelKey}_{DateTime.Now:yyyyMMdd_HHmmss}";
+        string voxPath = Path.Combine(Application.persistentDataPath, baseName + ".vox");
+        MeshSerializer.SaveAsync(baseName, _gridSize, _voxelSize, _voxelData3D, _voxelUV3D);
+        Debug.Log($"Saved voxel cache to {voxPath}");
+
+        // 2) Save mesh
+        // Mesh mesh = builder.Mesh; // your built mesh
+        // string objPath = Path.Combine(Application.persistentDataPath, baseName + ".obj");
+        // RuntimeExporter.ExportToObjAsync(gameObject, objPath);
+        // Debug.Log($"Exported mesh .obj to {objPath}");
     }
 }

@@ -16,7 +16,7 @@ public class MirrorScript : MonoBehaviour
 
     void Update()
     {
-        if (playerCamera == null || mirrorCamera == null) return;
+        if (playerCamera is null || mirrorCamera is null) return;
 
         // Get the mirror's normal (assuming the mirror faces its forward direction)
         Vector3 mirrorNormal = transform.forward;
