@@ -85,7 +85,7 @@ namespace Utils
                 Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
                 writer.Write(GetMeshOBJ(obj.name, meshFilter.sharedMesh, ApplyObjTransformations ? obj.transform.localToWorldMatrix : Matrix4x4.identity));
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogWarning($"[ExportToObjImpl] An exception occured while exporting selected GameObject : {e.Message}\n{e.StackTrace}", obj);
             }
@@ -139,7 +139,7 @@ namespace Utils
             ApplyObjTransformations = false;
 
             GameObject obj = Selection.activeObject as GameObject;
-            string path = EditorUtility.SaveFilePanel("Export OBJ", PreviousSelectedDirectory, obj.name, "obj");
+            string path = EditorUtility.SaveFilePanel("Export OBJ", PreviousSelectedDirectory, obj!.name, "obj");
 
             ExportToObjImpl(obj, path);
         }
@@ -170,7 +170,7 @@ namespace Utils
             ApplyObjTransformations = true;
 
             GameObject obj = Selection.activeObject as GameObject;
-            string path = EditorUtility.SaveFilePanel("Export OBJ", PreviousSelectedDirectory, obj.name, "obj");
+            string path = EditorUtility.SaveFilePanel("Export OBJ", PreviousSelectedDirectory, obj!.name, "obj");
 
             ExportToObjImpl(obj, path);
         }

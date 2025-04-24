@@ -141,7 +141,7 @@ namespace Controllers
             movementDirection.y = ctx.ReadValue<float>();
         }
 
-        public void ToolRotationPower(InputAction.CallbackContext ctx)
+        public void RotationPower(InputAction.CallbackContext ctx)
         {
             const float deadzone = 0.1f;
             float raw = ctx.ReadValue<float>();
@@ -149,7 +149,7 @@ namespace Controllers
             RumbleManager.instance.SetTriggerRumble(RightTriggerValue / 5f);
         }
 
-        public void ToolMovementSpeed(InputAction.CallbackContext ctx)
+        public void MovementSpeed(InputAction.CallbackContext ctx)
         {
             float raw = ctx.ReadValue<float>();
             LeftTriggerValue = 1f - raw;
@@ -162,8 +162,8 @@ namespace Controllers
             var d = ctx.ReadValue<Vector2>();
             if (d.x > 0) CycleAeratorForward();
             else if (d.x < 0) CycleAeratorBackward();
-            else if (d.y > 0) IncrementToolMovementSpeed();
-            else if (d.y < 0) DecrementToolMovementSpeed();
+            else if (d.y > 0) IncrementMovementSpeed();
+            else if (d.y < 0) DecrementMovementSpeed();
         }
 
         public void CycleAeratorForward()
@@ -174,8 +174,8 @@ namespace Controllers
         {
             activeAeratorIndex = (activeAeratorIndex - 1 + aerators.Count) % aerators.Count;
         }
-        public void IncrementToolMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, 1f);
-        public void DecrementToolMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, 1f);
+        public void IncrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, 1f);
+        public void DecrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, 1f);
         
         // Reset back to Level-Default position and rotation
         public void Reset(InputAction.CallbackContext context)

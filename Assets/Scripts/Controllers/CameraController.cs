@@ -7,16 +7,17 @@ namespace Controllers
     public class CameraController : MonoBehaviour
     {
         [Header("Camera Settings")]
-        public float sensitivity = 1f; // Mouse sensitivity
+        public float sensitivity = 50f; // Mouse sensitivity
         public float moveSpeed = 2f; // Camera movement speed
-        public float verticalMoveSpeed = 1f; // Vertical movement speed (for Q/E keys)
 
         private Vector2 lookInput; // Store mouse movement input
-        private Vector2 movementDirection; // Store WSAD input
-        private float xRotation = 0f; // Camera rotation around the x-axis
-        private Vector3 verticalMovement = Vector3.zero; // Store vertical movement (Q/E adjustment)
+        private Vector3 movementDirection; // Store WSAD input
+        private float xRotation; // Camera rotation around the x-axis
         private Vector3 defaultPosition;
         private Quaternion defaultRotation;
+        
+        public float RightTriggerValue { get; private set; }
+        public float LeftTriggerValue { get; private set; }
 
         private void Start()
         {
@@ -30,6 +31,7 @@ namespace Controllers
             {
                 return;
             }
+            
 
             float yaw = lookInput.x * Time.deltaTime;
             float pitch = -lookInput.y * Time.deltaTime;
@@ -46,7 +48,7 @@ namespace Controllers
             transform.Rotate(0, yaw, 0, Space.World);
 
             // Calculate movement direction
-            Vector3 forward = transform.forward * movementDirection.y;
+            Vector3 forward = transform.forward * movementDirection.z;
             Vector3 right = transform.right * movementDirection.x;
 
             // Move the camera horizontally
@@ -54,7 +56,7 @@ namespace Controllers
             transform.position += movement;
 
             // Apply vertical movement (Q/E for up/down)
-            transform.position += verticalMovement * Time.deltaTime;
+            transform.Translate(Vector3.up * (movementDirection.y * moveSpeed * Time.deltaTime), Space.World);
         }
 
         // Look method for mouse input
@@ -87,14 +89,44 @@ namespace Controllers
         // Move method for WASD input
         public void XZMovement(InputAction.CallbackContext context)
         {
-            movementDirection = context.ReadValue<Vector2>();
+            var v = context.ReadValue<Vector2>();
+            movementDirection.x = v.x;
+            movementDirection.z = v.y;
         }
 
         public void YMovement(InputAction.CallbackContext context)
         {
             // Q -> Move down, E -> Move up
-            verticalMovement = new Vector3(0, context.ReadValue<float>(), 0) * verticalMoveSpeed;
-
+            movementDirection.y = context.ReadValue<float>();
         }
+        
+        public void MovementSpeed(InputAction.CallbackContext ctx)
+        {
+            float raw = ctx.ReadValue<float>();
+            LeftTriggerValue = 1f - raw;
+            moveSpeed = LeftTriggerValue * 2;
+        }
+        
+        public void Sensitivity(InputAction.CallbackContext ctx)
+        {
+            float raw = ctx.ReadValue<float>();
+            RightTriggerValue = 1f - raw;
+            sensitivity = RightTriggerValue * 100;
+        }
+        
+        public void DPad(InputAction.CallbackContext ctx)
+        {
+            if (!ctx.performed) return;
+            var d = ctx.ReadValue<Vector2>();
+            if (d.x > 0) IncrementSensitivity();
+            else if (d.x < 0) DecrementSensitivity();
+            else if (d.y > 0) IncrementMovementSpeed();
+            else if (d.y < 0) DecrementMovementSpeed();
+        }
+        
+        public void IncrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed + 0.1f, 0.5f, 2f);
+        public void DecrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed - 0.1f, 0.5f, 2f);
+        public void IncrementSensitivity() => sensitivity = Mathf.Clamp(sensitivity + 5f, 1f, 100f);
+        public void DecrementSensitivity() => sensitivity = Mathf.Clamp(sensitivity - 5f, 1f, 100f);
     }
 }

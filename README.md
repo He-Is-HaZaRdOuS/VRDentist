@@ -1,21 +1,33 @@
 # VRDentist
 
-## Description
-VRDentist is a virtual reality application that simulates a dental clinic. <br>
-The application is designed to help users practice their dental skills in a realistic and immersive environment. <br>
-The application is designed to be used with a VR headset and a controller. <br>
-The user can interact with the environment by using the controller to pick up and use dental tools. <br>
-The application is designed to be used in a clinical setting, where the user can practice their dental skills in a safe and controlled environment. <br>
-
 ## Controls
 
-#### Eagle Camera
+### Eagle Camera
+##### Keyboard & Mouse
 - **Space**: Lock cursor/Activate camera
 - **WSAD**: Move
 - **EQ**: Move up and down
 - **Mouse**: Look around
 
-#### Tools
+##### Controller
+- **LeftTrigger**: Inversely proportional to the movement speed of the camera
+- **RightTrigger**: Inversely proportional to the look sensitivity of the camera
+- **LeftBumper**: Move camera on the negative Y axis
+- **RightBumper**: Move camera on the positive Y axis
+- **LeftStick**: Move the camera on the XZ plane
+- **RightStick**: Rotate the camera on the XY plane
+- **LeftDPad**: Decrement Sensitivity
+- **RightDPad**: Increment Sensitivity
+- **UpDPad**: Increment Speed
+- **DownDPad**: Decrement Speed
+- **StartButton**: Lock cursor/Activate camera
+- **WestButton**: Reset camera transform to default
+- **EastButton**: Manually save voxel cache
+- **NorthButton**: Toggle input modes
+
+![Xbox Controller Layout](XBox_One_Controls_VRDenstist_Camera.png)
+
+### Tools
 - **LeftTrigger**: Inversely proportional to the movement speed of the tool
 - **RightTrigger**: proportional to the drilling power of the tool
 - **LeftBumper**: Move tool on the negative Y axis
@@ -26,5 +38,8 @@ The application is designed to be used in a clinical setting, where the user can
 - **RightDPad**: Cycle tool index forwards
 - **UpDPad**: Increment Speed
 - **DownDPad**: Decrement Speed
+- **WestButton**: Reset tool transform to default
+- **EastButton**: Manually save voxel cache
+- **NorthButton**: Toggle input modes
 
-![Xbox Controller Layout](XBox_One_Controls_VRDentist.png)
+![Xbox Controller Layout](XBox_One_Controls_VRDenstist_Tool.png)

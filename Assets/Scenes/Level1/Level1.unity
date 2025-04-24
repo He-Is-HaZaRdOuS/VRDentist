@@ -600,6 +600,26 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 2f958e86-a9d3-4185-b01a-c0c43bb39f57
     m_ActionName: UIMap/ToggleControlMode[/Gamepad/buttonNorth]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 54e13743-c216-4de8-8ad7-67ae7166e4a6
+    m_ActionName: ToolMap/Reset[/Gamepad/buttonWest]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 2cad33cb-78e6-4457-baff-4e361a6a016f
+    m_ActionName: CameraMap/Reset[/Gamepad/buttonWest]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 50cff344-016b-4c9a-9d37-2da75894fb70
+    m_ActionName: CameraMap/MovementSpeed[/Gamepad/leftTrigger]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 4d491385-272d-4067-80da-6f6812775522
+    m_ActionName: CameraMap/DPad[/Gamepad/dpad]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3b6d0268-8aee-4fa6-ac3c-b10e578b701c
+    m_ActionName: Global/SaveCurrentToothState[/Gamepad/buttonEast]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: CameraMap
@@ -619,7 +639,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sensitivity: 50
   moveSpeed: 2
-  verticalMoveSpeed: 1
 --- !u!1001 &547803090
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2641,7 +2660,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 803642038}
         m_TargetAssemblyTypeName: Controllers.ToolInputManager, Assembly-CSharp
-        m_MethodName: ToolRotationPower
+        m_MethodName: RotationPower
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2657,7 +2676,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 803642038}
         m_TargetAssemblyTypeName: Controllers.ToolInputManager, Assembly-CSharp
-        m_MethodName: ToolMovementSpeed
+        m_MethodName: MovementSpeed
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2813,6 +2832,54 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 3b6d0268-8aee-4fa6-ac3c-b10e578b701c
     m_ActionName: Global/SaveCurrentToothState[/Gamepad/buttonEast]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 499519337}
+        m_TargetAssemblyTypeName: Controllers.CameraController, Assembly-CSharp
+        m_MethodName: MovementSpeed
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 50cff344-016b-4c9a-9d37-2da75894fb70
+    m_ActionName: CameraMap/MovementSpeed[/Gamepad/leftTrigger]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 499519337}
+        m_TargetAssemblyTypeName: Controllers.CameraController, Assembly-CSharp
+        m_MethodName: DPad
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 4d491385-272d-4067-80da-6f6812775522
+    m_ActionName: CameraMap/DPad[/Gamepad/dpad]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 499519337}
+        m_TargetAssemblyTypeName: Controllers.CameraController, Assembly-CSharp
+        m_MethodName: Sensitivity
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 378ac13a-38ae-4f70-be06-c884c57f7de3
+    m_ActionName: CameraMap/Sensitivity[/Gamepad/rightTrigger]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Global

@@ -33,7 +33,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "ToolRotationPower",
+                    "name": "RotationPower",
                     "type": "Value",
                     "id": "19ea8bf3-0169-4340-817e-8218117770fa",
                     "expectedControlType": "Axis",
@@ -42,7 +42,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "ToolMovementSpeed",
+                    "name": "MovementSpeed",
                     "type": "Value",
                     "id": "6e6f9488-9d7a-4a02-9bd2-609aaae43183",
                     "expectedControlType": "Axis",
@@ -132,7 +132,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "ToolRotationPower",
+                    "action": "RotationPower",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -143,7 +143,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "ToolMovementSpeed",
+                    "action": "MovementSpeed",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -219,6 +219,33 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "MovementSpeed",
+                    "type": "Value",
+                    "id": "50cff344-016b-4c9a-9d37-2da75894fb70",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Sensitivity",
+                    "type": "Value",
+                    "id": "378ac13a-38ae-4f70-be06-c884c57f7de3",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "DPad",
+                    "type": "Value",
+                    "id": "4d491385-272d-4067-80da-6f6812775522",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -406,6 +433,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Reset",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9b692c0c-812a-431d-89a9-90592cdae968",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MovementSpeed",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "676335da-f0be-4a6f-a38a-84170b756d9d",
+                    "path": "<Gamepad>/dpad",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DPad",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a8acc9e8-902e-4e31-a62c-19fcb41b4f81",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Sensitivity",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
