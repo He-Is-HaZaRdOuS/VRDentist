@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Managers;
 
-namespace Managers
+namespace Controllers
 {
+    [RequireComponent(typeof(PlayerInput))]
     public class ToolInputManager : MonoBehaviour
     {
         public static ToolInputManager instance;
@@ -92,11 +94,11 @@ namespace Managers
             if (prevActiveIndex >= 0 && prevActiveIndex < aeratorRenderers.Count)
             {
                 var prevR = aeratorRenderers[prevActiveIndex];
-                if (prevR != null) prevR.material = defaultMaterial;
+                if (prevR is not null) prevR.material = defaultMaterial;
             }
             // set new
             var currentR = aeratorRenderers[activeAeratorIndex];
-            if (currentR != null) currentR.material = activeMaterial;
+            if (currentR is not null) currentR.material = activeMaterial;
 
             prevActiveIndex = activeAeratorIndex;
         }
@@ -174,5 +176,13 @@ namespace Managers
         }
         public void IncrementToolMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, 1f);
         public void DecrementToolMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, 1f);
+        
+        // Reset back to Level-Default position and rotation
+        public void Reset(InputAction.CallbackContext context)
+        {
+            if (!context.performed) return;
+            Debug.Log("Reset Aerator");
+            aerators[activeAeratorIndex].Reset();
+        }
     }
 }

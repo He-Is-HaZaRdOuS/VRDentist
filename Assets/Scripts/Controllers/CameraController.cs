@@ -3,10 +3,11 @@ using UnityEngine.InputSystem;
 
 namespace Controllers
 {
+    [RequireComponent(typeof(PlayerInput))]
     public class CameraController : MonoBehaviour
     {
         [Header("Camera Settings")]
-        public float sensitivity = 0.1f; // Mouse sensitivity
+        public float sensitivity = 1f; // Mouse sensitivity
         public float moveSpeed = 2f; // Camera movement speed
         public float verticalMoveSpeed = 1f; // Vertical movement speed (for Q/E keys)
 
@@ -14,18 +15,16 @@ namespace Controllers
         private Vector2 movementDirection; // Store WSAD input
         private float xRotation = 0f; // Camera rotation around the x-axis
         private Vector3 verticalMovement = Vector3.zero; // Store vertical movement (Q/E adjustment)
+        private Vector3 defaultPosition;
+        private Quaternion defaultRotation;
 
-        void Awake()
+        private void Start()
         {
-            Cursor.lockState = CursorLockMode.None;
+            defaultPosition = transform.localPosition;
+            defaultRotation = transform.localRotation;
         }
 
-        void Start()
-        {
-
-        }
-
-        void Update()
+        private void Update()
         {
             if (Cursor.lockState != CursorLockMode.Locked)
             {
@@ -77,13 +76,21 @@ namespace Controllers
             }
         }
 
+        // Reset back to Level-Default position and rotation
+        public void Reset(InputAction.CallbackContext context)
+        {
+            if (!context.performed) return;
+            Debug.Log("Reset Camera");
+            transform.SetLocalPositionAndRotation(defaultPosition, defaultRotation);
+        }
+
         // Move method for WASD input
-        public void Move(InputAction.CallbackContext context)
+        public void XZMovement(InputAction.CallbackContext context)
         {
             movementDirection = context.ReadValue<Vector2>();
         }
 
-        public void VerticalMove(InputAction.CallbackContext context)
+        public void YMovement(InputAction.CallbackContext context)
         {
             // Q -> Move down, E -> Move up
             verticalMovement = new Vector3(0, context.ReadValue<float>(), 0) * verticalMoveSpeed;

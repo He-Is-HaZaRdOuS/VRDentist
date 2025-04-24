@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Managers;
+using Controllers;
 using MarchingCubes;
+using Utils;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -33,6 +36,11 @@ public class Tooth : MonoBehaviour
     private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
     
+    // serialization related fields
+    private string _modelKey;
+    private float[,,] _voxelData3D;
+    private Vector2[,,] _voxelUV3D;
+    
     private MeshFilter _meshFilter;
     private AeratorTip[] _aerators;
 
@@ -60,27 +68,25 @@ public class Tooth : MonoBehaviour
         transform.position += _meshFilter.mesh.bounds.center;
 
         // Attempt to load cached voxel grid + UVs
-        Vector2[,,] voxelUV3D;
-        float[,,] voxelData3D;
-        string modelKey = gameObject.name;
+        _modelKey = gameObject.name;
 
-        if (!MeshSerializer.Load(modelKey, out _gridSize, out _voxelSize, out voxelData3D, out voxelUV3D))
+        if (!MeshSerializer.Load(_modelKey, out _gridSize, out _voxelSize, out _voxelData3D, out _voxelUV3D))
         {
             // No cache: voxelize and save
-            voxelData3D = MeshVoxelizer.SmoothVoxelize(
+            _voxelData3D = MeshVoxelizer.SmoothVoxelize(
                 _meshFilter.mesh,
                 ref _gridSize,
                 ref _voxelSize,
                 resolution,
                 1,
-                ref voxelUV3D
+                ref _voxelUV3D
             );
-            MeshSerializer.Save(modelKey, _gridSize, _voxelSize, voxelData3D, voxelUV3D);
-            Debug.Log($"Voxelized and cached model '{modelKey}'");
+            MeshSerializer.SaveAsync(_modelKey, _gridSize, _voxelSize, _voxelData3D, _voxelUV3D);
+            Debug.Log($"Voxelized and cached model '{_modelKey}'");
         }
         else
         {
-            Debug.Log($"Loaded cached voxel data for model '{modelKey}'");
+            Debug.Log($"Loaded cached voxel data for model '{_modelKey}'");
         }
 
         // Flatten 3D arrays into 1D for GPU buffers
@@ -94,9 +100,9 @@ public class Tooth : MonoBehaviour
             for (int y = 0; y < _gridSize.y; y++)
                 for (int z = 0; z < _gridSize.z; z++)
                 {
-                    voxels1D[idx]      = voxelData3D[x, y, z];
-                    uvs1D[idx]         = voxelUV3D[x, y, z];
-                    toughness1D[idx++] = voxelData3D[x, y, z];
+                    voxels1D[idx]      = _voxelData3D[x, y, z];
+                    uvs1D[idx]         = _voxelUV3D[x, y, z];
+                    toughness1D[idx++] = _voxelData3D[x, y, z];
                 }
 
         // Create and upload compute buffers
@@ -255,5 +261,20 @@ public class Tooth : MonoBehaviour
     {
         collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
         return readBuffer[0] > 0;
+    }
+    
+    public void SaveState()
+    {
+        // 1) Save voxels
+        string baseName = $"{_modelKey}_{DateTime.Now:yyyyMMdd_HHmmss}";
+        string voxPath = Path.Combine(Application.persistentDataPath, baseName + ".vox");
+        MeshSerializer.SaveAsync(baseName, _gridSize, _voxelSize, _voxelData3D, _voxelUV3D);
+        Debug.Log($"Saved voxel cache to {voxPath}");
+
+        // 2) Save mesh
+        // Mesh mesh = builder.Mesh; // your built mesh
+        // string objPath = Path.Combine(Application.persistentDataPath, baseName + ".obj");
+        // RuntimeExporter.ExportToObjAsync(gameObject, objPath);
+        // Debug.Log($"Exported mesh .obj to {objPath}");
     }
 }
