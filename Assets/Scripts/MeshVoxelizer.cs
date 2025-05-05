@@ -24,6 +24,7 @@ public class MeshVoxelizer : MonoBehaviour
             return fill < 1;
         }
     }
+
     public class Triangle
     {
         public Vector3 a, b, c;
@@ -65,11 +66,11 @@ public class MeshVoxelizer : MonoBehaviour
             w = (d00 * d21 - d01 * d20) * denom;
             u = 1.0f - v - w;
         }
-
     }
 
     // http://blog.wolfire.com/2009/11/Triangle-mesh-voxelization
-    public static float[,,] Voxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, float resolution, ref Vector2[,,]texCoords)
+    public static float[,,] Voxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, float resolution,
+        ref Vector2[,,] texCoords)
     {
         mesh.RecalculateBounds();
 
@@ -79,14 +80,14 @@ public class MeshVoxelizer : MonoBehaviour
         var maxLength = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
         voxelSize = maxLength / resolution;
 
-        var start = bounds.min - 2*new Vector3(voxelSize, voxelSize, voxelSize);
+        var start = bounds.min - 2 * new Vector3(voxelSize, voxelSize, voxelSize);
         var end = bounds.max + new Vector3(voxelSize, voxelSize, voxelSize);
         var size = end - start;
-        
+
         gridSize.x = Mathf.CeilToInt(size.x / voxelSize) + 4;
         gridSize.y = Mathf.CeilToInt(size.y / voxelSize) + 4;
         gridSize.z = Mathf.CeilToInt(size.z / voxelSize) + 4;
-        
+
         var volume = new Voxel_t[gridSize.x, gridSize.y, gridSize.z];
         var boxes = new Bounds[gridSize.x, gridSize.y, gridSize.z];
         var voxelSizeVec3 = Vector3.one * voxelSize;
@@ -135,8 +136,12 @@ public class MeshVoxelizer : MonoBehaviour
             var max = tri.bounds.max - start;
             // int iminX = Mathf.RoundToInt(min.x / voxelSize), iminY = Mathf.RoundToInt(min.y / voxelSize), iminZ = Mathf.RoundToInt(min.z / voxelSize);
             // int imaxX = Mathf.RoundToInt(max.x / voxelSize), imaxY = Mathf.RoundToInt(max.y / voxelSize), imaxZ = Mathf.RoundToInt(max.z / voxelSize);
-            int iminX = Mathf.FloorToInt(min.x / voxelSize), iminY = Mathf.FloorToInt(min.y / voxelSize), iminZ = Mathf.FloorToInt(min.z / voxelSize);
-            int imaxX = Mathf.CeilToInt(max.x / voxelSize), imaxY = Mathf.CeilToInt(max.y / voxelSize), imaxZ = Mathf.CeilToInt(max.z / voxelSize);
+            int iminX = Mathf.FloorToInt(min.x / voxelSize),
+                iminY = Mathf.FloorToInt(min.y / voxelSize),
+                iminZ = Mathf.FloorToInt(min.z / voxelSize);
+            int imaxX = Mathf.CeilToInt(max.x / voxelSize),
+                imaxY = Mathf.CeilToInt(max.y / voxelSize),
+                imaxZ = Mathf.CeilToInt(max.z / voxelSize);
 
             iminX = Mathf.Clamp(iminX, 0, gridSize.x - 1);
             iminY = Mathf.Clamp(iminY, 0, gridSize.y - 1);
@@ -169,6 +174,7 @@ public class MeshVoxelizer : MonoBehaviour
                             {
                                 voxel.front = voxel.front & front;
                             }
+
                             voxel.fill = voxel.fill | 1;
                             volume[x, y, z] = voxel;
                         }
@@ -194,6 +200,7 @@ public class MeshVoxelizer : MonoBehaviour
                         {
                             break;
                         }
+
                         uv = volume[x, y, ifront].uv;
                     }
 
@@ -202,7 +209,9 @@ public class MeshVoxelizer : MonoBehaviour
                     var iback = ifront;
 
                     // step forward to cavity
-                    for (; iback < gridSize.z && volume[x, y, iback].IsEmpty(); iback++) { }
+                    for (; iback < gridSize.z && volume[x, y, iback].IsEmpty(); iback++)
+                    {
+                    }
 
                     if (iback >= gridSize.z) break;
 
@@ -210,7 +219,9 @@ public class MeshVoxelizer : MonoBehaviour
                     if (volume[x, y, iback].IsBackFace())
                     {
                         // step forward to back face
-                        for (; iback < gridSize.z && volume[x, y, iback].IsBackFace(); iback++) { }
+                        for (; iback < gridSize.z && volume[x, y, iback].IsBackFace(); iback++)
+                        {
+                        }
                     }
 
                     // fill from ifront to iback
@@ -228,37 +239,40 @@ public class MeshVoxelizer : MonoBehaviour
                 }
             }
         }
-        
+
         var emptyVoxelCount = 0;
         var voxels = new float[gridSize.x, gridSize.y, gridSize.z];
         texCoords = new Vector2[gridSize.x, gridSize.y, gridSize.z];
         for (var x = 0; x < gridSize.x; x++)
-            for (var y = 0; y < gridSize.y; y++)
-                for (var z = 0; z < gridSize.z; z++)
-                {
-                    voxels[x, y, z] = volume[x, y, z].IsEmpty() ? -1f : 1f;
-                    texCoords[x,y,z] = volume[x, y, z].IsEmpty() ? GetUVFromNeighbour(volume,x,y,z, gridSize) : volume[x, y, z].uv;
-                    if (volume[x, y, z].IsEmpty())
-                        emptyVoxelCount++;
-                }
-     
+        for (var y = 0; y < gridSize.y; y++)
+        for (var z = 0; z < gridSize.z; z++)
+        {
+            voxels[x, y, z] = volume[x, y, z].IsEmpty() ? -1f : 1f;
+            texCoords[x, y, z] = volume[x, y, z].IsEmpty()
+                ? GetUVFromNeighbour(volume, x, y, z, gridSize)
+                : volume[x, y, z].uv;
+            if (volume[x, y, z].IsEmpty())
+                emptyVoxelCount++;
+        }
+
         var numVoxels = gridSize.x * gridSize.y * gridSize.z;
         print($"Generated a {gridSize.x}x{gridSize.y}x{gridSize.z} voxel grid ({numVoxels} voxels)");
         print($"Empty voxel count: {emptyVoxelCount} ({100.0f * emptyVoxelCount / numVoxels}% of all voxels)");
         return voxels;
     }
 
-    public static float[,,] SmoothVoxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, int resolution, int smoothingLevel, ref Vector2[,,]texCoords)
+    public static float[,,] SmoothVoxelize(Mesh mesh, ref Vector3Int gridSize, ref float voxelSize, int resolution,
+        int smoothingLevel, ref Vector2[,,] texCoords)
     {
-        float[,,] voxels = Voxelize(mesh, ref gridSize,ref voxelSize, resolution, ref texCoords);
+        float[,,] voxels = Voxelize(mesh, ref gridSize, ref voxelSize, resolution, ref texCoords);
         if (smoothingLevel <= 0)
             return voxels;
-        
+
         float[,,] smoothVoxels = new float[gridSize.x, gridSize.y, gridSize.z];
         for (int i = 0; i < gridSize.x; i++)
-            for (int j = 0; j < gridSize.y; j++)
-                for (int k = 0; k < gridSize.z; k++)
-                    smoothVoxels[i, j, k] = -1f;
+        for (int j = 0; j < gridSize.y; j++)
+        for (int k = 0; k < gridSize.z; k++)
+            smoothVoxels[i, j, k] = -1f;
 
         for (int i = 0; i < smoothingLevel; i++)
         {
@@ -270,13 +284,12 @@ public class MeshVoxelizer : MonoBehaviour
             {
                 ApplySmoothing(ref smoothVoxels, ref voxels, gridSize);
             }
-
         }
 
         return smoothingLevel % 2 == 0 ? voxels : smoothVoxels;
     }
 
-    private static void ApplySmoothing(ref float[,,] source, ref float[,,] dest, Vector3Int gridSize)
+    public static void ApplySmoothing(ref float[,,] source, ref float[,,] dest, Vector3Int gridSize)
     {
         for (int x = 1; x < gridSize.x - 1; x++)
         {
@@ -286,12 +299,12 @@ public class MeshVoxelizer : MonoBehaviour
                 {
                     var sum = 0f;
                     for (int i = -1; i < 2; i++)
-                        for (int j = -1; j < 2; j++)
-                            for (int k = -1; k < 2; k++)
-                                if (i == 0 || j == 0 || k == 0)
-                                    sum += source[x + i, y + j, z + k] * 2;
-                                else
-                                    sum += source[x + i, y + j, z + k];
+                    for (int j = -1; j < 2; j++)
+                    for (int k = -1; k < 2; k++)
+                        if (i == 0 || j == 0 || k == 0)
+                            sum += source[x + i, y + j, z + k] * 2;
+                        else
+                            sum += source[x + i, y + j, z + k];
                     dest[x, y, z] = sum / 54f;
                 }
             }
@@ -303,16 +316,17 @@ public class MeshVoxelizer : MonoBehaviour
         Vector2 average = Vector2.zero;
         int samples = 0;
         for (int i = -1; i < 2; i++)
-            for (int j = -1; j < 2; j++)
-                for (int k = -1; k < 2; k++)
-                    if (!(i == 0 && j == 0 && k == 0) &&
-                        x+i < dim.x && y+j < dim.y && z+k < dim.z &&
-                        x+i > 0 && y+j > 0 && z+k > 0 && 
-                        !voxels[x + i, y + j, z + k].IsEmpty())
-                    {
-                        samples++;
-                        average += voxels[x + i, y + j, z + k].uv;
-                    }
+        for (int j = -1; j < 2; j++)
+        for (int k = -1; k < 2; k++)
+            if (!(i == 0 && j == 0 && k == 0) &&
+                x + i < dim.x && y + j < dim.y && z + k < dim.z &&
+                x + i > 0 && y + j > 0 && z + k > 0 &&
+                !voxels[x + i, y + j, z + k].IsEmpty())
+            {
+                samples++;
+                average += voxels[x + i, y + j, z + k].uv;
+            }
+
         return average / samples;
     }
 
@@ -463,10 +477,10 @@ public class MeshVoxelizer : MonoBehaviour
         Vector3 center = aabb.center;
         var extents = aabb.max - center;
 
-        var r = extents.x * Mathf.Abs(pl.normal.x) + extents.y * Mathf.Abs(pl.normal.y) + extents.z * Mathf.Abs(pl.normal.z);
+        var r = extents.x * Mathf.Abs(pl.normal.x) + extents.y * Mathf.Abs(pl.normal.y) +
+                extents.z * Mathf.Abs(pl.normal.z);
         var s = Vector3.Dot(pl.normal, center) - pl.distance;
 
         return Mathf.Abs(s) <= r;
     }
 }
-

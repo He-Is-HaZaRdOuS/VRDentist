@@ -23,7 +23,7 @@ public class Tooth : MonoBehaviour
     private static readonly int CapsuleToolA = Shader.PropertyToID("capsuleToolA");
     private static readonly int CapsuleToolB = Shader.PropertyToID("capsuleToolB");
     private static readonly int CapsuleToolRange = Shader.PropertyToID("capsuleToolRange");
-    
+
     [SerializeField] private ComputeShader computeShader = null;
     [SerializeField] private int resolution = 128;
     private float triggerValue = 0.0f;
@@ -35,24 +35,25 @@ public class Tooth : MonoBehaviour
     private ComputeBuffer collisionInfoBuffer; // GPU
     private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
-    
+
     // serialization related fields
     private string _modelKey;
     private float[,,] _voxelData3D;
     private Vector2[,,] _voxelUV3D;
-    
+
     private MeshFilter _meshFilter;
     private AeratorTip[] _aerators;
 
     // number of voxels in each dimension
     private Vector3Int _gridSize = Vector3Int.zero;
     private float _voxelSize;
-    
+
     public Vector3Int GridSize => _gridSize;
     public float VoxelSize => _voxelSize * transform.localScale.x;
+
     public Vector3 CenterOffset => new Vector3(GridSize.x * transform.localScale.x,
         GridSize.y * transform.localScale.y, GridSize.z * transform.localScale.z) * VoxelSize / 2.0f;
-    
+
     private bool _collided = false;
     public bool IsCarvedThisFrame => _collided;
 
@@ -62,7 +63,7 @@ public class Tooth : MonoBehaviour
         _aerators = FindObjectsOfType<AeratorTip>();
     }
 
-        public void Start()
+    public void Start()
     {
         // adjust pivot
         transform.position += _meshFilter.mesh.bounds.center;
@@ -91,26 +92,26 @@ public class Tooth : MonoBehaviour
 
         // Flatten 3D arrays into 1D for GPU buffers
         int count = _gridSize.x * _gridSize.y * _gridSize.z;
-        var voxels1D          = new float[count];
-        var uvs1D             = new Vector2[count];
-        var toughness1D       = new float[count];
+        var voxels1D = new float[count];
+        var uvs1D = new Vector2[count];
+        var toughness1D = new float[count];
 
         int idx = 0;
         for (int x = 0; x < _gridSize.x; x++)
-            for (int y = 0; y < _gridSize.y; y++)
-                for (int z = 0; z < _gridSize.z; z++)
-                {
-                    voxels1D[idx]      = _voxelData3D[x, y, z];
-                    uvs1D[idx]         = _voxelUV3D[x, y, z];
-                    toughness1D[idx++] = _voxelData3D[x, y, z];
-                }
+        for (int y = 0; y < _gridSize.y; y++)
+        for (int z = 0; z < _gridSize.z; z++)
+        {
+            voxels1D[idx] = _voxelData3D[x, y, z];
+            uvs1D[idx] = _voxelUV3D[x, y, z];
+            toughness1D[idx++] = _voxelData3D[x, y, z];
+        }
 
         // Create and upload compute buffers
         int totalVoxels = count;
-        voxelBuffer         = new ComputeBuffer(totalVoxels, sizeof(float));
-        voxelUVBuffer       = new ComputeBuffer(totalVoxels, sizeof(float) * 2);
+        voxelBuffer = new ComputeBuffer(totalVoxels, sizeof(float));
+        voxelUVBuffer = new ComputeBuffer(totalVoxels, sizeof(float) * 2);
         collisionInfoBuffer = new ComputeBuffer(totalVoxels, sizeof(float));
-        voxelToughnessBuffer= new ComputeBuffer(totalVoxels, sizeof(float));
+        voxelToughnessBuffer = new ComputeBuffer(totalVoxels, sizeof(float));
 
         voxelBuffer.SetData(voxels1D);
         voxelUVBuffer.SetData(uvs1D);
@@ -118,28 +119,37 @@ public class Tooth : MonoBehaviour
 
         // Bind buffers (use cached kernel indices or FindKernel)
         int kMeshReconstruct = computeShader.FindKernel("MeshReconstruction");
-        int kCarve           = computeShader.FindKernel("Carve");
-        int kCarveCapsule    = computeShader.FindKernel("CarveCapsule");
-        int kClearColl       = computeShader.FindKernel("ClearCollisionBuffer");
+        int kCarve = computeShader.FindKernel("Carve");
+        int kCarveCapsule = computeShader.FindKernel("CarveCapsule");
+        int kClearColl = computeShader.FindKernel("ClearCollisionBuffer");
 
         computeShader.SetBuffer(kMeshReconstruct, VoxelUV, voxelUVBuffer);
-        computeShader.SetBuffer(kClearColl,        CollisionInfo,   collisionInfoBuffer);
+        computeShader.SetBuffer(kClearColl, CollisionInfo, collisionInfoBuffer);
 
-        computeShader.SetBuffer(kCarve,            Voxels,          voxelBuffer);
-        computeShader.SetBuffer(kCarve,            VoxelToughness,  voxelToughnessBuffer);
-        computeShader.SetBuffer(kCarve,            CollisionInfo,   collisionInfoBuffer);
+        computeShader.SetBuffer(kCarve, Voxels, voxelBuffer);
+        computeShader.SetBuffer(kCarve, VoxelToughness, voxelToughnessBuffer);
+        computeShader.SetBuffer(kCarve, CollisionInfo, collisionInfoBuffer);
 
-        computeShader.SetBuffer(kCarveCapsule,     Voxels,          voxelBuffer);
-        computeShader.SetBuffer(kCarveCapsule,     VoxelToughness,  voxelToughnessBuffer);
-        computeShader.SetBuffer(kCarveCapsule,     CollisionInfo,   collisionInfoBuffer);
+        computeShader.SetBuffer(kCarveCapsule, Voxels, voxelBuffer);
+        computeShader.SetBuffer(kCarveCapsule, VoxelToughness, voxelToughnessBuffer);
+        computeShader.SetBuffer(kCarveCapsule, CollisionInfo, collisionInfoBuffer);
 
         // Initialize mesh builder and build initial mesh
         builder = new MeshBuilder(_gridSize, 1000000, computeShader);
         BuildMesh();
     }
 
+    private bool _done = false;
+
     public void FixedUpdate()
     {
+        if (_done) return;
+        if (!_done && Input.GetKey(KeyCode.K))
+        {
+            _done = true;
+            evaluate();
+        }
+
         triggerValue = ToolInputManager.instance.RightTriggerValue;
         triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
 
@@ -155,6 +165,7 @@ public class Tooth : MonoBehaviour
                     CarveCapsule(aerator);
                     break;
             }
+
             if (_collided)
             {
                 RumbleManager.instance.SetCollisionIntensity(highFreq * triggerValue);
@@ -197,7 +208,7 @@ public class Tooth : MonoBehaviour
         SetToolPower(aerator);
         computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
         computeShader.DispatchThreads(2, _gridSize.x, _gridSize.y, _gridSize.z);
-        
+
         // var voxelIndex = GlobalPositionToVoxelIndex(tp);
         // var flattenedIndex = voxelIndex.z + voxelIndex.y * _gridSize.z + voxelIndex.x * _gridSize.y * _gridSize.z;
         // if (flattenedIndex >= 0 && flattenedIndex < _gridSize.x * _gridSize.y * _gridSize.z)
@@ -216,8 +227,8 @@ public class Tooth : MonoBehaviour
         // var bottomObj = GameObject.Find("bottom").transform.position;
 
         // Apply local offsets for top and bottom tips, boost the Y value inversely proportional to the tool's scale
-        Vector3 localTopTip = new Vector3(0, 1, 0);  // Offset upward
-        Vector3 localBottomTip = new Vector3(0, -1, 0);  // Offset downward
+        Vector3 localTopTip = new Vector3(0, 1, 0); // Offset upward
+        Vector3 localBottomTip = new Vector3(0, -1, 0); // Offset downward
 
         // Convert the adjusted local positions back to world space
         Vector3 topTip = aerator.Transform.TransformPoint(localTopTip);
@@ -251,7 +262,7 @@ public class Tooth : MonoBehaviour
             (int)Math.Round(localPosition.x / VoxelSize),
             (int)Math.Round(localPosition.y / VoxelSize),
             (int)Math.Round(localPosition.z / VoxelSize)
-            );
+        );
 
         index.Clamp(new Vector3Int(0, 0, 0), _gridSize);
         return index;
@@ -262,7 +273,7 @@ public class Tooth : MonoBehaviour
         collisionInfoBuffer.GetData(readBuffer, 0, 0, 1);
         return readBuffer[0] > 0;
     }
-    
+
     public void SaveState()
     {
         // 1) Save voxels
@@ -276,5 +287,44 @@ public class Tooth : MonoBehaviour
         // string objPath = Path.Combine(Application.persistentDataPath, baseName + ".obj");
         // RuntimeExporter.ExportToObjAsync(gameObject, objPath);
         // Debug.Log($"Exported mesh .obj to {objPath}");
+    }
+
+    private void evaluate()
+    {
+        // Get voxels & evaluate
+        float[,,] voxels = new float[_gridSize.x, _gridSize.y, _gridSize.z];
+        voxelBuffer.GetData(voxels, 0, 0, _gridSize.x * _gridSize.y * _gridSize.z);
+        var res = ToothEvaluator.Evaluate(voxels, _gridSize, (int)(_gridSize.y * 0.7), 0.0f);
+
+        // Visualize errors
+        float[,,] errors = new float[_gridSize.x, _gridSize.y, _gridSize.z];
+        for (int i = 0; i < _gridSize.x; i++)
+        for (int j = 0; j < _gridSize.y; j++)
+        for (int k = 0; k < _gridSize.z; k++)
+            errors[i, j, k] = -1f;
+        MeshVoxelizer.ApplySmoothing(ref res.Errors, ref errors, _gridSize);
+        voxelBuffer.SetData(errors);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
+        BuildMesh();
+        GameObject.Find("ErrorVisualizer").GetComponent<MeshFilter>().sharedMesh =
+            MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
+
+        // Visualize improvements
+        float[,,] improvements = new float[_gridSize.x, _gridSize.y, _gridSize.z];
+        for (int i = 0; i < _gridSize.x; i++)
+        for (int j = 0; j < _gridSize.y; j++)
+        for (int k = 0; k < _gridSize.z; k++)
+            improvements[i, j, k] = -1f;
+        MeshVoxelizer.ApplySmoothing(ref res.Improvements, ref improvements, _gridSize);
+        voxelBuffer.SetData(improvements);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
+        BuildMesh();
+        GameObject.Find("ImprovementsVisualizer").GetComponent<MeshFilter>().sharedMesh =
+            MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
+
+        // restore tooth mesh
+        voxelBuffer.SetData(voxels);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
+        BuildMesh();
     }
 }
