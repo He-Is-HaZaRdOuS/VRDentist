@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Managers;
 using Controllers;
@@ -82,8 +81,15 @@ public class Tooth : MonoBehaviour
                 1,
                 ref _voxelUV3D
             );
-            MeshSerializer.SaveAsync(_modelKey, _gridSize, _voxelSize, _voxelData3D, _voxelUV3D);
-            Debug.Log($"Voxelized and cached model '{_modelKey}'");
+            if (_modelKey == "nocache")
+            {
+                Debug.Log("Skip caching stage (object is named 'nocache')");
+            }
+            else
+            {
+                MeshSerializer.SaveAsync(_modelKey, _gridSize, _voxelSize, _voxelData3D, _voxelUV3D);
+                Debug.Log($"Voxelized and cached model '{_modelKey}'");
+            }
         }
         else
         {
@@ -186,6 +192,7 @@ public class Tooth : MonoBehaviour
 
     public void OnDestroy()
     {
+        if (builder == null) return;
         builder.Dispose();
         voxelBuffer.Dispose();
         voxelUVBuffer.Dispose();
