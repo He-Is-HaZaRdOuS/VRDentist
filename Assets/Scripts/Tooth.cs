@@ -25,6 +25,8 @@ public class Tooth : MonoBehaviour
 
     [SerializeField] private ComputeShader computeShader = null;
     [SerializeField] private int resolution = 128;
+    [SerializeField] private MeshFilter errorVisualizer = null;
+    [SerializeField] private MeshFilter improvementsVisualizer = null;
     private float triggerValue = 0.0f;
     public float lowFreq = 0.0f;
     public float highFreq = 0.0f;
@@ -234,8 +236,8 @@ public class Tooth : MonoBehaviour
         // var bottomObj = GameObject.Find("bottom").transform.position;
 
         // Apply local offsets for top and bottom tips, boost the Y value inversely proportional to the tool's scale
-        Vector3 localTopTip = new Vector3(0, 1, 0); // Offset upward
-        Vector3 localBottomTip = new Vector3(0, -1, 0); // Offset downward
+        Vector3 localTopTip = new Vector3(0, 1 - ts.x, 0); // Offset upward
+        Vector3 localBottomTip = new Vector3(0, ts.x - 1, 0); // Offset downward
 
         // Convert the adjusted local positions back to world space
         Vector3 topTip = aerator.Transform.TransformPoint(localTopTip);
@@ -246,7 +248,7 @@ public class Tooth : MonoBehaviour
         SetToolPower(aerator);
         computeShader.SetFloats(CapsuleToolA, topTip.x, topTip.y, topTip.z);
         computeShader.SetFloats(CapsuleToolB, bottomTip.x, bottomTip.y, bottomTip.z);
-        computeShader.SetFloat(CapsuleToolRange, ts.y); // used to be 0.125f
+        computeShader.SetFloat(CapsuleToolRange, ts.x * 2.0f);
 
         computeShader.SetFloat(Scale, VoxelSize);
         computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
@@ -313,8 +315,8 @@ public class Tooth : MonoBehaviour
         voxelBuffer.SetData(errors);
         computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
         BuildMesh();
-        GameObject.Find("ErrorVisualizer").GetComponent<MeshFilter>().sharedMesh =
-            MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
+        var errVisualizer = Instantiate(errorVisualizer, transform, false);
+        errVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
 
         // Visualize improvements
         float[,,] improvements = new float[_gridSize.x, _gridSize.y, _gridSize.z];
@@ -326,8 +328,8 @@ public class Tooth : MonoBehaviour
         voxelBuffer.SetData(improvements);
         computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
         BuildMesh();
-        GameObject.Find("ImprovementsVisualizer").GetComponent<MeshFilter>().sharedMesh =
-            MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
+        var impVisualizer = Instantiate(improvementsVisualizer, transform, false);
+        impVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
 
         // restore tooth mesh
         voxelBuffer.SetData(voxels);
