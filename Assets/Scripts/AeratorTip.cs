@@ -26,12 +26,13 @@ public class AeratorTip : MonoBehaviour
     private readonly List<Renderer> _cubeRenderers = new();
     private readonly List<Transform> _cubeTransforms = new();
     private static readonly Quaternion _cubeRotation = new Quaternion(0.5f, 0.5f, 0.5f, 0.5f);
+
     private readonly List<Vector3> _offsetDirs = new()
     {
         new Vector3(-1, 0, -1),
-        new Vector3(-1, 0,  1),
-        new Vector3( 1, 0, -1),
-        new Vector3( 1, 0,  1)
+        new Vector3(-1, 0, 1),
+        new Vector3(1, 0, -1),
+        new Vector3(1, 0, 1)
     };
 
     void Start()
@@ -59,6 +60,7 @@ public class AeratorTip : MonoBehaviour
 
     void Update()
     {
+        Transform.Rotate(Vector3.up * Time.deltaTime * power * 2.0f);
         if (_tooth is null || _debugCubes.Count == 0)
             return;
 

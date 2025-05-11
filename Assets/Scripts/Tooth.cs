@@ -230,7 +230,7 @@ public class Tooth : MonoBehaviour
     private void CarveCapsule(AeratorTip aerator)
     {
         var tp = aerator.Transform.position;
-        var ts = aerator.Transform.localScale;
+        var ts = aerator.Transform.lossyScale;
         var dp = transform.position - CenterOffset;
         // var topObj = GameObject.Find("top").transform.position;
         // var bottomObj = GameObject.Find("bottom").transform.position;
