@@ -5,20 +5,20 @@ using UnityEngine;
 public class MirrorScript : MonoBehaviour
 {
     private Camera playerCamera;
-    public Camera mirrorCamera;  // Assign the mirror's camera in the Inspector
+    public Camera mirrorCamera;
     public float reflectionDepthFactor = 0.5f; // Adjust this to control how far the mirror camera is behind the mirror
-    public Vector3 rotationOffset;  // Assign the rotation offset to simulate the mirror's angle (e.g., new Vector3(-10, 0, 0))
+    public Vector3 rotationOffset;
 
     void Start()
     {
-        playerCamera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+        initCamera();
     }
 
     void Update()
     {
         if (playerCamera is null || mirrorCamera is null) return;
 
-        // Get the mirror's normal (assuming the mirror faces its forward direction)
+        // Get the mirror's normal
         Vector3 mirrorNormal = transform.forward;
         Vector3 mirrorPosition = transform.position;
 
@@ -50,7 +50,12 @@ public class MirrorScript : MonoBehaviour
         // Apply the mirrored rotation
         mirrorCamera.transform.rotation = Quaternion.LookRotation(reflectedForward, reflectedUp);
 
-        // Apply the rotational offset (you can change the offset to match your mirror's angle)
+        // Apply the rotational offset
         mirrorCamera.transform.rotation *= Quaternion.Euler(rotationOffset);
+    }
+
+    public void initCamera()
+    {
+        playerCamera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
     }
 }

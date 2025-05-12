@@ -9,7 +9,8 @@ Preset:
   m_Name: XRI Default Gaze Controller
   m_TargetType:
     m_NativeTypeID: 114
-    m_ManagedTypePPtr: {fileID: 11500000, guid: caff514de9b15ad48ab85dcff5508221, type: 3}
+    m_ManagedTypePPtr: {fileID: 11500000, guid: caff514de9b15ad48ab85dcff5508221,
+      type: 3}
     m_ManagedTypeFallback: 
   m_Properties:
   - target: {fileID: 0}
@@ -74,7 +75,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_PositionAction.m_Action.m_ExpectedControlType
-    value: Vector3
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_PositionAction.m_Action.m_Id
@@ -99,7 +100,8 @@ Preset:
   - target: {fileID: 0}
     propertyPath: m_PositionAction.m_Reference
     value: 
-    objectReference: {fileID: 3220680263695665919, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    objectReference: {fileID: 3220680263695665919, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
   - target: {fileID: 0}
     propertyPath: m_RotationAction.m_UseReference
     value: 1
@@ -114,7 +116,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_RotationAction.m_Action.m_ExpectedControlType
-    value: Quaternion
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_RotationAction.m_Action.m_Id
@@ -139,47 +141,8 @@ Preset:
   - target: {fileID: 0}
     propertyPath: m_RotationAction.m_Reference
     value: 
-    objectReference: {fileID: -5930349909990434036, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_UseReference
-    value: 1
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_Name
-    value: Is Tracked
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_Type
-    value: 1
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_ExpectedControlType
-    value: Button
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_Id
-    value: 5c0d8bf3-8c9a-43da-89cf-8d09230caf0e
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_Processors
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_Interactions
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_SingletonActionBindings.Array.size
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Action.m_Flags
-    value: 1
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_IsTrackedAction.m_Reference
-    value: 
-    objectReference: {fileID: -831106814531524825, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    objectReference: {fileID: -5930349909990434036, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
   - target: {fileID: 0}
     propertyPath: m_TrackingStateAction.m_UseReference
     value: 1
@@ -194,7 +157,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_TrackingStateAction.m_Action.m_ExpectedControlType
-    value: Integer
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_TrackingStateAction.m_Action.m_Id
@@ -219,7 +182,8 @@ Preset:
   - target: {fileID: 0}
     propertyPath: m_TrackingStateAction.m_Reference
     value: 
-    objectReference: {fileID: 2069149553511882089, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    objectReference: {fileID: 2069149553511882089, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
   - target: {fileID: 0}
     propertyPath: m_SelectAction.m_UseReference
     value: 0
@@ -230,11 +194,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_SelectAction.m_Action.m_Type
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_SelectAction.m_Action.m_ExpectedControlType
-    value: Button
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_SelectAction.m_Action.m_Id
@@ -274,7 +238,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_SelectActionValue.m_Action.m_ExpectedControlType
-    value: Axis
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_SelectActionValue.m_Action.m_Id
@@ -310,11 +274,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_ActivateAction.m_Action.m_Type
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_ActivateAction.m_Action.m_ExpectedControlType
-    value: Button
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_ActivateAction.m_Action.m_Id
@@ -354,7 +318,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_ActivateActionValue.m_Action.m_ExpectedControlType
-    value: Axis
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_ActivateActionValue.m_Action.m_Id
@@ -390,11 +354,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_UIPressAction.m_Action.m_Type
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_UIPressAction.m_Action.m_ExpectedControlType
-    value: Button
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_UIPressAction.m_Action.m_Id
@@ -434,7 +398,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_UIPressActionValue.m_Action.m_ExpectedControlType
-    value: Axis
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_UIPressActionValue.m_Action.m_Id
@@ -461,46 +425,6 @@ Preset:
     value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_UseReference
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_Name
-    value: UI Scroll
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_Type
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_ExpectedControlType
-    value: Vector2
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_Id
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_Processors
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_Interactions
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_SingletonActionBindings.Array.size
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Action.m_Flags
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_UIScrollAction.m_Reference
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
     propertyPath: m_HapticDeviceAction.m_UseReference
     value: 0
     objectReference: {fileID: 0}
@@ -510,7 +434,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_HapticDeviceAction.m_Action.m_Type
-    value: 2
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_HapticDeviceAction.m_Action.m_ExpectedControlType
@@ -554,7 +478,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_RotateAnchorAction.m_Action.m_ExpectedControlType
-    value: Vector2
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_RotateAnchorAction.m_Action.m_Id
@@ -594,7 +518,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_DirectionalAnchorRotationAction.m_Action.m_ExpectedControlType
-    value: Vector2
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_DirectionalAnchorRotationAction.m_Action.m_Id
@@ -634,7 +558,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_TranslateAnchorAction.m_Action.m_ExpectedControlType
-    value: Vector2
+    value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_TranslateAnchorAction.m_Action.m_Id
@@ -658,86 +582,6 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_TranslateAnchorAction.m_Reference
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_UseReference
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_Name
-    value: Scale Toggle
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_Type
-    value: 1
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_ExpectedControlType
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_Id
-    value: c491f7d4-d5f5-485e-8ebe-d323ea5e8eee
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_Processors
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_Interactions
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_SingletonActionBindings.Array.size
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Action.m_Flags
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleToggleAction.m_Reference
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_UseReference
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_Name
-    value: Scale Delta
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_Type
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_ExpectedControlType
-    value: Vector2
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_Id
-    value: 702606e7-26dd-4ff2-8e26-59078e8cafee
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_Processors
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_Interactions
-    value: 
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_SingletonActionBindings.Array.size
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Action.m_Flags
-    value: 0
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: m_ScaleDeltaAction.m_Reference
     value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}

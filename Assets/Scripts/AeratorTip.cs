@@ -13,6 +13,7 @@ public class AeratorTip : MonoBehaviour
     [SerializeField, Range(0, 1000)] private int power;
     [SerializeField] private GameObject debugCubePrefab;
     [SerializeField] private bool showDebugCubes;
+    [SerializeField] private bool physicalRotationEnabled;
 
     public Transform Transform => transform;
     public int Power => power;
@@ -56,11 +57,17 @@ public class AeratorTip : MonoBehaviour
 
         // Initialize first positions
         UpdateDebugCubes();
+
+        physicalRotationEnabled = false;
     }
 
     void Update()
     {
-        Transform.Rotate(Vector3.up * Time.deltaTime * power * 2.0f);
+        if (physicalRotationEnabled)
+        {
+            Transform.Rotate(Vector3.up * (Time.deltaTime * power * 2.0f));
+        }
+        
         if (_tooth is null || _debugCubes.Count == 0)
             return;
 

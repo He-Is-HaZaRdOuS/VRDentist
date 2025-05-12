@@ -20,7 +20,7 @@ RWStructuredBuffer<float> CollisionInfo;
 
 // Marching Cubes Parameters
 uint MaxTriangle;
-float Scale;
+float Scale; // Voxel size
 float Isovalue;
 StructuredBuffer<uint2> TriangleTable;
 RWByteAddressBuffer VertexBuffer;

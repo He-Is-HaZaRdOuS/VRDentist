@@ -19,6 +19,10 @@ namespace Controllers
 
         [Header("Tool Movement")]
         [SerializeField] private float toolMovementSpeed = 1f;
+        
+        [Header("Triggers")]
+        [SerializeField] public float RightTriggerValue;
+        [SerializeField] public float LeftTriggerValue;
 
         private Camera mainCamera;
         private List<Renderer> aeratorRenderers = new List<Renderer>();
@@ -26,8 +30,9 @@ namespace Controllers
         private int prevActiveIndex = -1;
         private Vector2 rotation;
         private Vector3 movementDirection;
-        public float RightTriggerValue { get; private set; }
-        public float LeftTriggerValue { get; private set; }
+
+        
+        public Handedness CurrentHoldingHand = Handedness.None;
 
         private void Awake()
         {
@@ -51,6 +56,16 @@ namespace Controllers
             // Initialize visuals
             UpdateActiveVisual();
             UpdateActiveVisual();
+        }
+
+        private void Update()
+        {
+            if (XRModeSwitcher.instance.isXRMode)
+            {
+                RightTriggerValue = XRInput.GetRightTriggerValue();
+                LeftTriggerValue = XRInput.GetLeftTriggerValue();
+                CurrentHoldingHand = aerators.Count > 0 ? aerators[activeAeratorIndex].holdingHand : Handedness.None;
+            }
         }
 
         private void LateUpdate()
@@ -109,6 +124,7 @@ namespace Controllers
             {
                 aerators.Add(aerator);
                 aeratorRenderers.Add(aerator.GetComponent<Renderer>());
+                activeAeratorIndex = aerators.IndexOf(aerator);
             }
         }
 

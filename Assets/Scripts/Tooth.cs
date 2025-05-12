@@ -27,7 +27,7 @@ public class Tooth : MonoBehaviour
     [SerializeField] private int resolution = 128;
     [SerializeField] private MeshFilter errorVisualizer = null;
     [SerializeField] private MeshFilter improvementsVisualizer = null;
-    private float triggerValue = 0.0f;
+    [SerializeField] private float triggerValue = 0.0f;
     public float lowFreq = 0.0f;
     public float highFreq = 0.0f;
     private ComputeBuffer voxelBuffer; // GPU
@@ -50,10 +50,9 @@ public class Tooth : MonoBehaviour
     private float _voxelSize;
 
     public Vector3Int GridSize => _gridSize;
-    public float VoxelSize => _voxelSize * transform.localScale.x;
+    public float VoxelSize => _voxelSize * transform.lossyScale.x;
 
-    public Vector3 CenterOffset => new Vector3(GridSize.x * transform.localScale.x,
-        GridSize.y * transform.localScale.y, GridSize.z * transform.localScale.z) * VoxelSize / 2.0f;
+    public Vector3 CenterOffset => new Vector3(GridSize.x, GridSize.y, GridSize.z) * VoxelSize / 2.0f;
 
     private bool _collided = false;
     public bool IsCarvedThisFrame => _collided;
@@ -67,7 +66,8 @@ public class Tooth : MonoBehaviour
     public void Start()
     {
         // adjust pivot
-        transform.position += _meshFilter.mesh.bounds.center;
+        transform.position += _meshFilter.mesh.bounds.center * transform.lossyScale.x;
+        /*Debug.Log($"transform.lossyScale.x: {transform.lossyScale.x}");*/
 
         // Attempt to load cached voxel grid + UVs
         _modelKey = gameObject.name;
@@ -158,10 +158,7 @@ public class Tooth : MonoBehaviour
             evaluate();
         }
 
-        triggerValue = ToolInputManager.instance.RightTriggerValue;
-        triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
 
-        _collided = false;
         foreach (var aerator in _aerators)
         {
             switch (aerator.AeratorType)
@@ -176,8 +173,28 @@ public class Tooth : MonoBehaviour
 
             if (_collided)
             {
+                Debug.Log("Collided");
+                if (XRModeSwitcher.instance.isXRMode)
+                {
+                    triggerValue = ToolInputManager.instance.CurrentHoldingHand switch
+                    {
+                        Handedness.Left => ToolInputManager.instance.LeftTriggerValue,
+                        Handedness.Right => ToolInputManager.instance.RightTriggerValue,
+                        _ => 0f
+                    };
+                    /*Debug.Log($"CurrentHoldingHand: {ToolInputManager.instance.CurrentHoldingHand}, triggerValue: {triggerValue}");*/
+                }
+                else
+                {
+                    triggerValue = ToolInputManager.instance.RightTriggerValue;
+                    /*Debug.Log(triggerValue);*/
+                    //triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
+                }
+                
                 RumbleManager.instance.SetCollisionIntensity(highFreq * triggerValue);
             }
+            
+            _collided = false;
         }
 
         BuildMesh();
@@ -188,8 +205,11 @@ public class Tooth : MonoBehaviour
 
     private void BuildMesh()
     {
+        var old = transform.localScale;
+        transform.localScale /= transform.lossyScale.x;
         builder.BuildIsosurface(voxelBuffer, 0f, VoxelSize);
         _meshFilter.sharedMesh = builder.Mesh;
+        transform.localScale = old;
     }
 
     public void OnDestroy()
@@ -236,8 +256,8 @@ public class Tooth : MonoBehaviour
         // var bottomObj = GameObject.Find("bottom").transform.position;
 
         // Apply local offsets for top and bottom tips, boost the Y value inversely proportional to the tool's scale
-        Vector3 localTopTip = new Vector3(0, 1 - ts.x, 0); // Offset upward
-        Vector3 localBottomTip = new Vector3(0, ts.x - 1, 0); // Offset downward
+        Vector3 localTopTip = new Vector3(0, 1 - ts.x*2.0f, 0); // Offset upward
+        Vector3 localBottomTip = new Vector3(0, 2.0f*ts.x - 1, 0); // Offset downward
 
         // Convert the adjusted local positions back to world space
         Vector3 topTip = aerator.Transform.TransformPoint(localTopTip);
@@ -248,7 +268,7 @@ public class Tooth : MonoBehaviour
         SetToolPower(aerator);
         computeShader.SetFloats(CapsuleToolA, topTip.x, topTip.y, topTip.z);
         computeShader.SetFloats(CapsuleToolB, bottomTip.x, bottomTip.y, bottomTip.z);
-        computeShader.SetFloat(CapsuleToolRange, ts.x * 2.0f);
+        computeShader.SetFloat(CapsuleToolRange, ts.x*2.0f);
 
         computeShader.SetFloat(Scale, VoxelSize);
         computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);

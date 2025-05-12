@@ -75,7 +75,7 @@
                     "id": "0c9a0f75-96e3-469a-abf6-cd4b6b007c32",
                     "path": "<Gamepad>/leftStick",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone(max=1)",
                     "groups": "",
                     "action": "XZMovement",
                     "isComposite": false,
@@ -86,7 +86,7 @@
                     "id": "be7fbfa8-5df1-4676-81fd-27790500e702",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone(max=1)",
                     "groups": "",
                     "action": "YawPitchRotation",
                     "isComposite": false,
@@ -251,34 +251,12 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "8d394705-d6d7-4544-94f7-96287e0f28c4",
-                    "path": "<Mouse>/delta",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Look",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "752b6087-5fa7-4992-b972-b0612579287d",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone(max=1)",
                     "groups": "",
                     "action": "Look",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "f092ed1c-8b28-44e7-add0-ceb6cfba198c",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Lock",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -294,103 +272,15 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "2D Vector",
-                    "id": "4db93035-6778-4fb7-80c4-00d5c5a18447",
-                    "path": "2DVector",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "XZMovement",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "up",
-                    "id": "89b86297-5608-435c-8bb2-14857ff8c32b",
-                    "path": "<Keyboard>/w",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "XZMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "down",
-                    "id": "e5b15562-157f-416a-a3bf-82b0f7f47933",
-                    "path": "<Keyboard>/s",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "XZMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "left",
-                    "id": "dcb15325-4f16-4a08-9dbb-f163781cd407",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "XZMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "ba63a6c2-cff8-4277-ba41-e44d90bcd39f",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "XZMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "",
                     "id": "7b7c2477-f3ed-491c-9644-9c17a15e21fc",
                     "path": "<Gamepad>/leftStick",
                     "interactions": "",
-                    "processors": "",
+                    "processors": "StickDeadzone(max=1)",
                     "groups": "",
                     "action": "XZMovement",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "1D Axis",
-                    "id": "20e57a50-9d22-400e-9457-bcb22f1a20f0",
-                    "path": "1DAxis",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "YMovement",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "a1331015-4aaa-484e-9bea-adbcc423fe71",
-                    "path": "<Keyboard>/q",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "YMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "46fd9abf-3512-4459-8a53-091cd743fc2d",
-                    "path": "<Keyboard>/e",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "YMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 },
                 {
                     "name": "1D Axis",

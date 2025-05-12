@@ -7,8 +7,10 @@ namespace Controllers
     public class CameraController : MonoBehaviour
     {
         [Header("Camera Settings")]
+        [SerializeField] private float maxSensitivity = 100f;
         public float sensitivity = 50f; // Mouse sensitivity
-        public float moveSpeed = 2f; // Camera movement speed
+        [SerializeField] private float maxMoveSpeed = 10f;
+        public float moveSpeed = 5f; // Camera movement speed
 
         private Vector2 lookInput; // Store mouse movement input
         private Vector3 movementDirection; // Store WSAD input
@@ -104,14 +106,14 @@ namespace Controllers
         {
             float raw = ctx.ReadValue<float>();
             LeftTriggerValue = 1f - raw;
-            moveSpeed = LeftTriggerValue * 2;
+            moveSpeed = LeftTriggerValue * maxMoveSpeed;
         }
         
         public void Sensitivity(InputAction.CallbackContext ctx)
         {
             float raw = ctx.ReadValue<float>();
             RightTriggerValue = 1f - raw;
-            sensitivity = RightTriggerValue * 100;
+            sensitivity = RightTriggerValue * maxSensitivity;
         }
         
         public void DPad(InputAction.CallbackContext ctx)
@@ -124,9 +126,9 @@ namespace Controllers
             else if (d.y < 0) DecrementMovementSpeed();
         }
         
-        public void IncrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed + 0.1f, 0.5f, 2f);
-        public void DecrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed - 0.1f, 0.5f, 2f);
-        public void IncrementSensitivity() => sensitivity = Mathf.Clamp(sensitivity + 5f, 1f, 100f);
-        public void DecrementSensitivity() => sensitivity = Mathf.Clamp(sensitivity - 5f, 1f, 100f);
+        public void IncrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed + 0.5f, 0.5f, maxMoveSpeed);
+        public void DecrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed - 0.5f, 0.5f, maxMoveSpeed);
+        public void IncrementSensitivity() => sensitivity = Mathf.Clamp(sensitivity + 5f, 1f, maxSensitivity);
+        public void DecrementSensitivity() => sensitivity = Mathf.Clamp(sensitivity - 5f, 1f, maxSensitivity);
     }
 }
