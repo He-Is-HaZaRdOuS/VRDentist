@@ -27,6 +27,8 @@ public class Tooth : MonoBehaviour
     [SerializeField] private int resolution = 128;
     [SerializeField] private MeshFilter errorVisualizer = null;
     [SerializeField] private MeshFilter improvementsVisualizer = null;
+    [SerializeField] private MeshFilter carvedVisualizer = null;
+    [SerializeField] private MeshFilter distanceVisualizer = null;
     [SerializeField] private float triggerValue = 0.0f;
     public float lowFreq = 0.0f;
     public float highFreq = 0.0f;
@@ -51,6 +53,7 @@ public class Tooth : MonoBehaviour
 
     public Vector3Int GridSize => _gridSize;
     public float VoxelSize => _voxelSize * transform.lossyScale.x;
+    private float _voxelSizeInMillimeters;
 
     public Vector3 CenterOffset => new Vector3(GridSize.x, GridSize.y, GridSize.z) * VoxelSize / 2.0f;
 
@@ -97,6 +100,8 @@ public class Tooth : MonoBehaviour
         {
             Debug.Log($"Loaded cached voxel data for model '{_modelKey}'");
         }
+
+        _voxelSizeInMillimeters = LookupToothHeightInMillimeters() / _gridSize.y;
 
         // Flatten 3D arrays into 1D for GPU buffers
         int count = _gridSize.x * _gridSize.y * _gridSize.z;
@@ -190,10 +195,10 @@ public class Tooth : MonoBehaviour
                     /*Debug.Log(triggerValue);*/
                     //triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
                 }
-                
+
                 RumbleManager.instance.SetCollisionIntensity(highFreq * triggerValue);
             }
-            
+
             _collided = false;
         }
 
@@ -256,8 +261,8 @@ public class Tooth : MonoBehaviour
         // var bottomObj = GameObject.Find("bottom").transform.position;
 
         // Apply local offsets for top and bottom tips, boost the Y value inversely proportional to the tool's scale
-        Vector3 localTopTip = new Vector3(0, 1 - ts.x*2.0f, 0); // Offset upward
-        Vector3 localBottomTip = new Vector3(0, 2.0f*ts.x - 1, 0); // Offset downward
+        Vector3 localTopTip = new Vector3(0, 1 - ts.x * 2.0f, 0); // Offset upward
+        Vector3 localBottomTip = new Vector3(0, 2.0f * ts.x - 1, 0); // Offset downward
 
         // Convert the adjusted local positions back to world space
         Vector3 topTip = aerator.Transform.TransformPoint(localTopTip);
@@ -268,7 +273,7 @@ public class Tooth : MonoBehaviour
         SetToolPower(aerator);
         computeShader.SetFloats(CapsuleToolA, topTip.x, topTip.y, topTip.z);
         computeShader.SetFloats(CapsuleToolB, bottomTip.x, bottomTip.y, bottomTip.z);
-        computeShader.SetFloat(CapsuleToolRange, ts.x*2.0f);
+        computeShader.SetFloat(CapsuleToolRange, ts.x * 2.0f);
 
         computeShader.SetFloat(Scale, VoxelSize);
         computeShader.SetFloats(DestructiblePosition, dp.x, dp.y, dp.z);
@@ -323,7 +328,8 @@ public class Tooth : MonoBehaviour
         // Get voxels & evaluate
         float[,,] voxels = new float[_gridSize.x, _gridSize.y, _gridSize.z];
         voxelBuffer.GetData(voxels, 0, 0, _gridSize.x * _gridSize.y * _gridSize.z);
-        var res = ToothEvaluator.Evaluate(voxels, _gridSize, (int)(_gridSize.y * 0.7), 0.0f);
+        var res = ToothEvaluator.Evaluate(_voxelData3D, voxels, _gridSize,
+            (int)(_gridSize.y * 0.7), _voxelSizeInMillimeters, 0.0f);
 
         // Visualize errors
         float[,,] errors = new float[_gridSize.x, _gridSize.y, _gridSize.z];
@@ -351,9 +357,55 @@ public class Tooth : MonoBehaviour
         var impVisualizer = Instantiate(improvementsVisualizer, transform, false);
         impVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
 
+        // Visualize carved area
+        float[,,] carvedArea = new float[_gridSize.x, _gridSize.y, _gridSize.z];
+        for (int i = 0; i < _gridSize.x; i++)
+        for (int j = 0; j < _gridSize.y; j++)
+        for (int k = 0; k < _gridSize.z; k++)
+            carvedArea[i, j, k] = -1f;
+        MeshVoxelizer.ApplySmoothing(ref res.CarvedArea, ref carvedArea, _gridSize);
+        voxelBuffer.SetData(carvedArea);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
+        BuildMesh();
+        var carveVisualizer = Instantiate(carvedVisualizer, transform, false);
+        carveVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
+
+        // Visualize carved distance (how far carved into tooth)
+        voxelUVBuffer.SetData(res.DistanceUVs);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), VoxelUV, voxelUVBuffer);
+        voxelBuffer.SetData(voxels);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
+        BuildMesh();
+        var distVisualizer = Instantiate(distanceVisualizer, transform, false);
+        distVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
+
         // restore tooth mesh
         voxelBuffer.SetData(voxels);
         computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
         BuildMesh();
+    }
+
+    private float LookupToothHeightInMillimeters()
+    {
+        return gameObject.name switch
+        {
+            "LR1" => 20.2f,
+            "LR2" => 18.9f,
+            "LR3" => 21.9f,
+            "LR4" => 19.0f,
+            "LR5" => 19.1f,
+            "LR6" => 18.2f,
+            "LR7" => 17.7f,
+            "LR8" => 14.6f,
+            "LL1" => 20.2f,
+            "LL2" => 18.8f,
+            "LL3" => 22.0f,
+            "LL4" => 19.9f,
+            "LL5" => 19.2f,
+            "LL6" => 18.3f,
+            "LL7" => 17.0f,
+            "LL8" => 14.0f,
+            _ => 18f
+        };
     }
 }

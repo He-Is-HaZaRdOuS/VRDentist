@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ToothEvaluator
@@ -8,6 +9,8 @@ public class ToothEvaluator
         public float Score;
         public float[,,] Errors;
         public float[,,] Improvements;
+        public float[,,] CarvedArea;
+        public Vector2[,,] DistanceUVs;
     }
 
     private struct LayerData
@@ -19,16 +22,33 @@ public class ToothEvaluator
         public Vector2 CenterOfMass;
     }
 
-    public static EvaluationResult Evaluate(float[,,] voxels, Vector3Int gridSize, int minY, float threshold = 0.1f)
+    private struct ToothParameters
     {
+        public int StartY;
+        public float MinDist;
+        public float MaxDist;
+    }
+
+    public static EvaluationResult Evaluate(float[,,] initialState, float[,,] voxels, Vector3Int gridSize, int minY,
+        float voxelSize, float threshold = 0.1f)
+    {
+        /*
+         * voxels[i,j,k] > 0                              filled
+         * voxels[i,j,k] < 0                              empty
+         * initialState[i,j,k] > 0 && voxels[i,j,k] < 0   carved
+         */
+        Vector2[,,] distanceUVs = new Vector2[gridSize.x, gridSize.y, gridSize.z];
         float[,,] errors = new float[gridSize.x, gridSize.y, gridSize.z];
         float[,,] improvements = new float[gridSize.x, gridSize.y, gridSize.z];
+        float[,,] carvedArea = new float[gridSize.x, gridSize.y, gridSize.z];
         for (int x = 0; x < gridSize.x; x++)
         for (int y = 0; y < gridSize.y; y++)
         for (int z = 0; z < gridSize.z; z++)
         {
             errors[x, y, z] = -1f;
             improvements[x, y, z] = -1f;
+            carvedArea[x, y, z] = -1f;
+            distanceUVs[x, y, z].x = 0.5f;
         }
 
         int width = gridSize.x;
@@ -53,7 +73,7 @@ public class ToothEvaluator
             {
                 for (int z = 0; z < depth; z++)
                 {
-                    if (voxels[x, y, z] > threshold)
+                    if (voxels[x, y, z] > threshold) // if voxel is filled
                     {
                         filledCount++;
                         centerOfMass += new Vector2(x, z);
@@ -62,14 +82,19 @@ public class ToothEvaluator
                         if (z < minZ) minZ = z;
                         if (z > maxZ) maxZ = z;
 
-                        if (voxels[x, y - 1, z] < threshold)
+                        // if the voxel under this one is carved
+                        if (y - 1 >= 0 && voxels[x, y - 1, z] < threshold && initialState[x, y - 1, z] > threshold)
                         {
                             errors[x, y - 1, z] = 1.0f;
                             undercuts++;
                         }
                     }
-                    else
+                    else // if voxel is empty
                     {
+                        // continue if it was empty initially (not carved)
+                        if (initialState[x, y, z] < threshold) continue;
+
+                        // if the voxel above this one is marked as undercut, mark this one too
                         if (y + 1 < height && errors[x, y + 1, z] > 0.0f && voxels[x, y + 1, z] < threshold)
                         {
                             errors[x, y, z] = 1.0f;
@@ -92,33 +117,66 @@ public class ToothEvaluator
             layersUsed++;
         }
 
-        for (int y = height - 1; y >= minY; y--)
-        {
-            if (layers[y - minY].IsEmpty) continue;
-            var radius = Math.Min(layers[y - minY].MaxBounds.x - layers[y - minY].MinBounds.x,
-                layers[y - minY].MaxBounds.y - layers[y - minY].MinBounds.y) / 2.0f;
-            var center = layers[y - minY].BoundsCenter;
-            for (int x = 0; x < width; x++)
+        for (int x = 0; x < gridSize.x; x++)
+        for (int y = 0; y < gridSize.y; y++)
+        for (int z = 0; z < gridSize.z; z++)
+            if (initialState[x, y, z] > threshold && voxels[x, y, z] < threshold)
             {
-                for (int z = 0; z < depth; z++)
+                if (y < minY) errors[x, y, z] = 1.0f;
+                carvedArea[x, y, z] = 1.0f;
+            }
+
+        for (int y = minY; y < gridSize.y - 1; y++)
+        {
+            var outerRing = new List<Vector2>();
+            for (int x = 1; x < gridSize.x - 1; x++)
+            for (int z = 1; z < gridSize.z - 1; z++)
+            {
+                if (initialState[x, y, z] < threshold) continue;
+                if (
+                    initialState[x + 1, y, z] < initialState[x, y, z] ||
+                    initialState[x, y, z + 1] < initialState[x, y, z] ||
+                    initialState[x - 1, y, z] < initialState[x, y, z] ||
+                    initialState[x, y, z - 1] < initialState[x, y, z] ||
+                    initialState[x + 1, y, z + 1] < initialState[x, y, z] ||
+                    initialState[x + 1, y, z - 1] < initialState[x, y, z] ||
+                    initialState[x - 1, y, z + 1] < initialState[x, y, z] ||
+                    initialState[x - 1, y, z - 1] < initialState[x, y, z]
+                )
                 {
-                    if (
-                        (center.x - x) * (center.x - x) + (center.y - z) * (center.y - z) < radius * radius &&
-                        voxels[x, y, z] < threshold
-                    )
-                    {
-                        if (errors[x, y, z] < 0.0f)
-                            improvements[x, y, z] = 1.0f;
-                    }
+                    outerRing.Add(new Vector2(x, z));
+                    improvements[x, y, z] = 1.0f;
                 }
+            }
+
+            for (int x = 1; x < gridSize.x - 1; x++)
+            for (int z = 1; z < gridSize.z - 1; z++)
+            {
+                var minSquareDistance = 99999999.0f;
+                foreach (var p in outerRing)
+                {
+                    var dist = (p.x - x) * (p.x - x) + (p.y - z) * (p.y - z);
+                    if (dist < minSquareDistance)
+                        minSquareDistance = dist;
+                }
+
+                // target: 1 millimeters
+                const float targetDistance = 1.0f;
+                var carvedDistance = voxelSize * (float)Math.Sqrt(minSquareDistance);
+                var err = carvedDistance - targetDistance;
+                err = Mathf.Clamp(err, -1.0f, 1.0f);
+                err = (err + 1.0f) / 2.0f;
+                distanceUVs[x, y, z].y = 0.5f;
+                distanceUVs[x, y, z].x = err;
             }
         }
 
-        float alignmentScore = EvaluateSliceAlignment(layers);
+
+        // float alignmentScore = EvaluateSliceAlignment(layers);
         float score = Math.Min(100, 110 - undercuts);
         Debug.Log($"undercuts: {undercuts}");
         Debug.Log($"layersUsed: {layersUsed}");
-        Debug.Log($"alignmentScore: {alignmentScore}");
+        // Debug.Log($"alignmentScore: {alignmentScore}");
         Debug.Log($"score: {score}");
 
         return new EvaluationResult
@@ -126,6 +184,8 @@ public class ToothEvaluator
             Score = score,
             Errors = errors,
             Improvements = improvements,
+            CarvedArea = carvedArea,
+            DistanceUVs = distanceUVs
         };
     }
 
