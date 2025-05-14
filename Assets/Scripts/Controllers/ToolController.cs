@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Managers;
+using UnityEngine.Animations;
 
 namespace Controllers
 {
@@ -63,6 +65,11 @@ namespace Controllers
                 LeftTriggerValue = XRInput.GetLeftTriggerValue();
                 // TODO: Make `activeAeratorIndex` update when holding a valid aerator in XR mode. currently doesn't switch.
                 CurrentHoldingHand = aerators.Count > 0 ? aerators[activeAeratorIndex].holdingHand : Handedness.None;
+
+                if (XRInput.GetRightMenuButton())
+                {
+                    Evaluate();
+                }
             }
         }
 
@@ -173,6 +180,18 @@ namespace Controllers
             float raw = ctx.ReadValue<float>();
             LeftTriggerValue = 1f - raw;
             toolMovementSpeed = LeftTriggerValue;
+        }
+
+        public void Evaluate(InputAction.CallbackContext ctx)
+        {
+            Evaluate();
+        }
+
+        public void Evaluate()
+        {
+            var tooth = FindObjectsOfType<Tooth>().FirstOrDefault(t => t.isSelected);
+            if (tooth is not null)
+                tooth.Evaluate();
         }
 
         public void DPad(InputAction.CallbackContext ctx)

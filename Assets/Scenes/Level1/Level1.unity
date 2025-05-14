@@ -1600,6 +1600,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 98ffef57-b841-4364-a68f-6ebf1b1939fb
     m_ActionName: Global/RestartScene[/Gamepad/buttonWest]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 78bbd293-619d-4de2-ab14-4b0ed38251c2
+    m_ActionName: ToolMap/Evaluate[/Gamepad/buttonSouth]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: ToolMap
@@ -1728,12 +1732,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 875923046}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -127.2, y: -54.36, z: -96}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1053261135}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &875923048
 MonoBehaviour:
@@ -1748,22 +1752,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toothObjects:
-  - {fileID: 1533503529440264666}
-  - {fileID: 1705035750068232146}
-  - {fileID: 2172155266166993892}
-  - {fileID: 429593536892617947}
-  - {fileID: 1867797030329111493}
-  - {fileID: 155277751310893862}
-  - {fileID: 3618693543252222431}
-  - {fileID: 5893850746557095344}
-  - {fileID: 4059821275340892405}
-  - {fileID: 3520713194146401566}
-  - {fileID: 6457348956121409642}
-  - {fileID: 3343970486673934137}
-  - {fileID: 6222930242875686761}
-  - {fileID: 6773238999639581142}
-  - {fileID: 8738649971554871974}
   - {fileID: 7887385024264230102}
+  - {fileID: 8738649971554871974}
+  - {fileID: 6773238999639581142}
+  - {fileID: 6222930242875686761}
+  - {fileID: 3343970486673934137}
+  - {fileID: 6457348956121409642}
+  - {fileID: 3520713194146401566}
+  - {fileID: 4059821275340892405}
+  - {fileID: 5893850746557095344}
+  - {fileID: 3618693543252222431}
+  - {fileID: 155277751310893862}
+  - {fileID: 1867797030329111493}
+  - {fileID: 429593536892617947}
+  - {fileID: 2172155266166993892}
+  - {fileID: 1705035750068232146}
+  - {fileID: 1533503529440264666}
   highlightMat: {fileID: 2100000, guid: bd1ac00cf11b71baab0d34706c278511, type: 2}
   transparentMat: {fileID: 2100000, guid: 88cf7a9e7eb904279bcda07d331d9d90, type: 2}
   floatSpeed: 0.5
@@ -2276,7 +2280,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1970938084}
-  - {fileID: 875923047}
   - {fileID: 499519335}
   - {fileID: 305538541}
   m_Father: {fileID: 0}
@@ -2660,7 +2663,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1305100348
 Transform:
   m_ObjectHideFlags: 0
@@ -3434,6 +3437,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: HandRight
       objectReference: {fileID: 0}
+    - target: {fileID: 2728902658200667494, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3127728407712097239, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
       propertyPath: m_Height
       value: 4.5
@@ -3449,6 +3456,10 @@ PrefabInstance:
     - target: {fileID: 3471343859196315090, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
       propertyPath: m_TagString
       value: HandLeft
+      objectReference: {fileID: 0}
+    - target: {fileID: 3656114934633903323, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4134505312059479865, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
       propertyPath: m_LocalScale.x
@@ -3514,6 +3525,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6321641679068453239, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6454594071094758631, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -3537,6 +3552,10 @@ PrefabInstance:
     - target: {fileID: 6733349667411237925, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
       propertyPath: m_TagString
       value: HandRight
+      objectReference: {fileID: 0}
+    - target: {fileID: 7303196168416792226, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7313654230448209575, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
       propertyPath: m_Name
@@ -4616,6 +4635,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 98ffef57-b841-4364-a68f-6ebf1b1939fb
     m_ActionName: Global/RestartScene[/Gamepad/buttonWest]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 803642038}
+        m_TargetAssemblyTypeName: Controllers.ToolInputManager, Assembly-CSharp
+        m_MethodName: Evaluate
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 78bbd293-619d-4de2-ab14-4b0ed38251c2
+    m_ActionName: ToolMap/Evaluate[/Gamepad/buttonSouth]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Global
@@ -6473,7 +6508,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6773238999639581142}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c2c24ada0ad734c9294c8a8c1ca8b3, type: 3}
   m_Name: 
@@ -7042,7 +7077,8 @@ SceneRoots:
   m_Roots:
   - {fileID: 1053261135}
   - {fileID: 133329605}
+  - {fileID: 875923047}
   - {fileID: 1233473821}
   - {fileID: 803642039}
-  - {fileID: 1305100348}
   - {fileID: 1614081468}
+  - {fileID: 1305100348}

@@ -37,6 +37,7 @@ public class Tooth : MonoBehaviour
     private ComputeBuffer collisionInfoBuffer; // GPU
     private float[] readBuffer = new float[32]; // CPU
     private MeshBuilder builder;
+    public bool isSelected;
 
     // serialization related fields
     private string _modelKey;
@@ -150,16 +151,16 @@ public class Tooth : MonoBehaviour
 
     private bool _done = false;
 
+    public void Evaluate()
+    {
+        _done = true;
+        evaluate();
+    }
+
     public void FixedUpdate()
     {
         if (_done) return;
-        if (!_done && Input.GetKey(KeyCode.K))
-        {
-            _done = true;
-            evaluate();
-        }
-
-
+        
         foreach (var aerator in _aerators)
         {
             switch (aerator.AeratorType)
