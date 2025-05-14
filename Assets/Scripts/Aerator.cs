@@ -8,6 +8,7 @@ public enum Handedness { None, Left, Right }
 
 public class Aerator : MonoBehaviour
 {
+    private int index;
     private Vector3 defaultPosition;
     private Quaternion defaultRotation;
     public Handedness holdingHand = Handedness.None;
@@ -40,19 +41,26 @@ public class Aerator : MonoBehaviour
         transform.SetLocalPositionAndRotation(defaultPosition, defaultRotation);
     }
 
+    public void SetIndex(int newIndex)
+    {
+        index = newIndex;
+    }
+
     public void OnGrab(SelectEnterEventArgs args)
     {
         var controllerTag = args.interactorObject.transform.gameObject.tag;
-        Debug.Log(args.interactorObject.transform.gameObject);
+//        Debug.Log(args.interactorObject.transform.gameObject);
 
-        Debug.Log($"Interactor Tag: {controllerTag}");
+//        Debug.Log($"Interactor Tag: {controllerTag}");
         if (controllerTag == "HandLeft")
         {
             holdingHand = Handedness.Left;
+            ToolInputManager.instance.SetActiveAerator(index);
         }
         else if (controllerTag == "HandRight")
         {
             holdingHand = Handedness.Right;
+            ToolInputManager.instance.SetActiveAerator(index);
         }
     }
 
