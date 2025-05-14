@@ -80,14 +80,6 @@ namespace Controllers
             }
         }
 
-        // Reset back to Level-Default position and rotation
-        public void Reset(InputAction.CallbackContext context)
-        {
-            if (!context.performed) return;
-            Debug.Log("Reset Camera");
-            transform.SetLocalPositionAndRotation(defaultPosition, defaultRotation);
-        }
-
         // Move method for WASD input
         public void XZMovement(InputAction.CallbackContext context)
         {
@@ -124,6 +116,13 @@ namespace Controllers
             else if (d.x < 0) DecrementSensitivity();
             else if (d.y > 0) IncrementMovementSpeed();
             else if (d.y < 0) DecrementMovementSpeed();
+        }
+        
+        // Reset back to Level-Default position and rotation
+        public void Reset(InputAction.CallbackContext context)
+        {
+            Debug.Log("Reset Camera");
+            transform.SetLocalPositionAndRotation(defaultPosition, defaultRotation);
         }
         
         public void IncrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed + 0.5f, 0.5f, maxMoveSpeed);

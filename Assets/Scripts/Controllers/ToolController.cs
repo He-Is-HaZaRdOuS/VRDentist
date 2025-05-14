@@ -42,8 +42,6 @@ namespace Controllers
 
         private void Start()
         {
-            // Cache renderers
-        
             // Cache renderers (on self or children)
             aeratorRenderers.Clear();
             foreach (var aer in aerators)
@@ -55,7 +53,6 @@ namespace Controllers
 
             // Initialize visuals
             UpdateActiveVisual();
-            UpdateActiveVisual();
         }
 
         private void Update()
@@ -64,6 +61,7 @@ namespace Controllers
             {
                 RightTriggerValue = XRInput.GetRightTriggerValue();
                 LeftTriggerValue = XRInput.GetLeftTriggerValue();
+                // TODO: Make `activeAeratorIndex` update when holding a valid aerator in XR mode. currently doesn't switch.
                 CurrentHoldingHand = aerators.Count > 0 ? aerators[activeAeratorIndex].holdingHand : Handedness.None;
             }
         }
@@ -118,6 +116,11 @@ namespace Controllers
             prevActiveIndex = activeAeratorIndex;
         }
 
+        public void SetActiveAerator(int index)
+        {
+            activeAeratorIndex = index;
+        }
+
         public void RegisterAerator(Aerator aerator)
         {
             if (!aerators.Contains(aerator))
@@ -125,6 +128,7 @@ namespace Controllers
                 aerators.Add(aerator);
                 aeratorRenderers.Add(aerator.GetComponent<Renderer>());
                 activeAeratorIndex = aerators.IndexOf(aerator);
+                aerator.SetIndex(activeAeratorIndex);
             }
         }
 
@@ -159,10 +163,9 @@ namespace Controllers
 
         public void RotationPower(InputAction.CallbackContext ctx)
         {
-            const float deadzone = 0.1f;
             float raw = ctx.ReadValue<float>();
-            RightTriggerValue = Mathf.Abs(raw) > deadzone ? raw : 0f;
-            RumbleManager.instance.SetTriggerRumble(RightTriggerValue / 5f);
+            RightTriggerValue = raw;
+            RumbleManager.instance.SetTriggerRumble(raw / 5f);
         }
 
         public void MovementSpeed(InputAction.CallbackContext ctx)
@@ -181,6 +184,13 @@ namespace Controllers
             else if (d.y > 0) IncrementMovementSpeed();
             else if (d.y < 0) DecrementMovementSpeed();
         }
+        
+        // Reset back to Level-Default position and rotation
+        public void Reset(InputAction.CallbackContext ctx)
+        {
+            Debug.Log("Reset Aerator");
+            aerators[activeAeratorIndex].Reset();
+        }
 
         public void CycleAeratorForward()
         {
@@ -192,13 +202,5 @@ namespace Controllers
         }
         public void IncrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, 1f);
         public void DecrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, 1f);
-        
-        // Reset back to Level-Default position and rotation
-        public void Reset(InputAction.CallbackContext context)
-        {
-            if (!context.performed) return;
-            Debug.Log("Reset Aerator");
-            aerators[activeAeratorIndex].Reset();
-        }
     }
 }
