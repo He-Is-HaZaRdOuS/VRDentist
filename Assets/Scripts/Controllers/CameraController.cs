@@ -16,7 +16,7 @@ namespace Controllers
         private Vector3 movementDirection; // Store WSAD input
         private float xRotation; // Camera rotation around the x-axis
         private Vector3 defaultPosition;
-        private Quaternion defaultRotation;
+        private Vector3 defaultRotation;
         
         public float RightTriggerValue { get; private set; }
         public float LeftTriggerValue { get; private set; }
@@ -24,7 +24,11 @@ namespace Controllers
         private void Start()
         {
             defaultPosition = transform.localPosition;
-            defaultRotation = transform.localRotation;
+            Debug.Log(transform.localPosition);
+            defaultRotation = transform.rotation.eulerAngles;
+            Debug.Log(transform.rotation);
+            xRotation = defaultRotation.x;
+            Debug.Log(xRotation);
         }
 
         private void Update()
@@ -33,7 +37,6 @@ namespace Controllers
             {
                 return;
             }
-            
 
             float yaw = lookInput.x * Time.deltaTime;
             float pitch = -lookInput.y * Time.deltaTime;
@@ -122,7 +125,7 @@ namespace Controllers
         public void Reset(InputAction.CallbackContext context)
         {
             Debug.Log("Reset Camera");
-            transform.SetLocalPositionAndRotation(defaultPosition, defaultRotation);
+            transform.SetLocalPositionAndRotation(defaultPosition, Quaternion.Euler(defaultRotation));
         }
         
         public void IncrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed + 0.5f, 0.5f, maxMoveSpeed);

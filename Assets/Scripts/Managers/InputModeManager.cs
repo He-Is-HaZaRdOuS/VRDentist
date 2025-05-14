@@ -1,29 +1,32 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.XR.Interaction.Toolkit.Inputs;
 
 namespace Managers
 {
+    public enum InputMode {Camera, Tool, ToothSelector}
+    
     [RequireComponent(typeof(PlayerInput))]
     public class InputModeManager : MonoBehaviour
     {
         public static InputModeManager instance;
-        private Tooth activeTooth;
+        public InputMode currentMode;
 
         [Header("References")] private PlayerInput playerInput;
-        [SerializeField] private string cameraMap = "CameraMap";
-        [SerializeField] private string toolMap = "ToolMap";
+        [SerializeField] public string cameraMap = "CameraMap";
+        [SerializeField] public string toolMap = "ToolMap";
+        [SerializeField] public string toothSelectorMap = "ToothSelectorMap";
 
         private void Awake()
         {
-            playerInput = GetComponent<PlayerInput>();
-            SwitchActionMap(cameraMap);
-            Cursor.lockState = CursorLockMode.Locked;
+            if (instance == null) instance = this;
             
-            activeTooth = FindObjectOfType<Tooth>();
-            if (activeTooth == null)
-                Debug.LogError("Tooth not found in scene!");
+            playerInput = GetComponent<PlayerInput>();
+            SetMode(InputMode.ToothSelector);
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         public void OnToggleControlMode(InputAction.CallbackContext ctx)
@@ -31,26 +34,37 @@ namespace Managers
             // flip between maps
             if (playerInput.currentActionMap.name == cameraMap)
             {
-                SwitchActionMap(toolMap);
+                SetMode(InputMode.Tool);
                 Cursor.lockState = CursorLockMode.None;
             }
-            else
+            else if (playerInput.currentActionMap.name == toolMap)
             {
-                SwitchActionMap(cameraMap);
+                SetMode(InputMode.Camera);
                 Cursor.lockState = CursorLockMode.Locked;
             }
         }
 
+        public void OnRestartScene(InputAction.CallbackContext ctx)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
         private void SwitchActionMap(string map)
         {
+            map += "Map";
             playerInput.SwitchCurrentActionMap(map);
             playerInput.actions.FindActionMap("Global").Enable();
         }
 
-        public void SaveCurrentToothState(InputAction.CallbackContext ctx)
+        public InputMode GetCurrentMode()
         {
-            if (!ctx.performed) return;
-            activeTooth.SaveState();
+            return currentMode;
+        }
+
+        public void SetMode(InputMode mode)
+        {
+            currentMode = mode;
+            SwitchActionMap(currentMode.ToString());
         }
     }
 }
