@@ -178,7 +178,7 @@ public class Tooth : MonoBehaviour
 
             if (_collided)
             {
-                Debug.Log("Collided");
+                /*Debug.Log("Collided");*/
                 if (XRModeSwitcher.instance.isXRMode)
                 {
                     triggerValue = ToolInputManager.instance.CurrentHoldingHand switch

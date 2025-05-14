@@ -161,7 +161,7 @@
                 {
                     "name": "",
                     "id": "f7f1faff-73ff-4302-8e83-66ef757c00c0",
-                    "path": "<Gamepad>/buttonWest",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -318,7 +318,7 @@
                 {
                     "name": "",
                     "id": "03b8bfb0-e618-47f0-84ca-fe85291708c9",
-                    "path": "<Gamepad>/buttonWest",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -362,6 +362,54 @@
             ]
         },
         {
+            "name": "ToothSelectorMap",
+            "id": "d98c4f46-5d44-43fd-83b0-2e8f44b0d9eb",
+            "actions": [
+                {
+                    "name": "Select",
+                    "type": "Button",
+                    "id": "09aefde5-0ffc-47d5-bafa-d2af0904e2f3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "DPad",
+                    "type": "Value",
+                    "id": "70ec28b1-08cc-4be0-b654-44540022d324",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "1cbd0b94-72e0-4fb6-9949-d96e8ad825ea",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7ee8b392-c54b-4c54-8831-1872cceafb81",
+                    "path": "<Gamepad>/dpad",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DPad",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
             "name": "Global",
             "id": "bf0a32df-08e2-42f3-b206-8e12b4000810",
             "actions": [
@@ -375,9 +423,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SaveCurrentToothState",
+                    "name": "RestartScene",
                     "type": "Button",
-                    "id": "3b6d0268-8aee-4fa6-ac3c-b10e578b701c",
+                    "id": "98ffef57-b841-4364-a68f-6ebf1b1939fb",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -398,12 +446,12 @@
                 },
                 {
                     "name": "",
-                    "id": "d61dded3-af1d-4d6d-b779-f272a608703a",
-                    "path": "<Gamepad>/buttonEast",
+                    "id": "801a56c1-f417-4fc9-ac94-3b9e4d91a592",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "SaveCurrentToothState",
+                    "action": "RestartScene",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
