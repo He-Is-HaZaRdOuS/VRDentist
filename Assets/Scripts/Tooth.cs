@@ -26,7 +26,6 @@ public class Tooth : MonoBehaviour
     [SerializeField] private ComputeShader computeShader = null;
     [SerializeField] private int resolution = 128;
     [SerializeField] private MeshFilter errorVisualizer = null;
-    [SerializeField] private MeshFilter improvementsVisualizer = null;
     [SerializeField] private MeshFilter carvedVisualizer = null;
     [SerializeField] private MeshFilter distanceVisualizer = null;
     [SerializeField] private float triggerValue = 0.0f;
@@ -53,7 +52,6 @@ public class Tooth : MonoBehaviour
 
     public Vector3Int GridSize => _gridSize;
     public float VoxelSize => _voxelSize * transform.lossyScale.x;
-    private float _voxelSizeInMillimeters;
 
     public Vector3 CenterOffset => new Vector3(GridSize.x, GridSize.y, GridSize.z) * VoxelSize / 2.0f;
 
@@ -100,8 +98,6 @@ public class Tooth : MonoBehaviour
         {
             Debug.Log($"Loaded cached voxel data for model '{_modelKey}'");
         }
-
-        _voxelSizeInMillimeters = LookupToothHeightInMillimeters() / _gridSize.y;
 
         // Flatten 3D arrays into 1D for GPU buffers
         int count = _gridSize.x * _gridSize.y * _gridSize.z;
@@ -328,8 +324,11 @@ public class Tooth : MonoBehaviour
         // Get voxels & evaluate
         float[,,] voxels = new float[_gridSize.x, _gridSize.y, _gridSize.z];
         voxelBuffer.GetData(voxels, 0, 0, _gridSize.x * _gridSize.y * _gridSize.z);
+
+        var parameters = LookupToothParameters();
+        var voxelSize = LookupToothHeightInMillimeters() / _gridSize.y;
         var res = ToothEvaluator.Evaluate(_voxelData3D, voxels, _gridSize,
-            (int)(_gridSize.y * 0.7), _voxelSizeInMillimeters, 0.0f);
+            parameters, voxelSize, -0.25f);
 
         // Visualize errors
         float[,,] errors = new float[_gridSize.x, _gridSize.y, _gridSize.z];
@@ -343,19 +342,6 @@ public class Tooth : MonoBehaviour
         BuildMesh();
         var errVisualizer = Instantiate(errorVisualizer, transform, false);
         errVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
-
-        // Visualize improvements
-        float[,,] improvements = new float[_gridSize.x, _gridSize.y, _gridSize.z];
-        for (int i = 0; i < _gridSize.x; i++)
-        for (int j = 0; j < _gridSize.y; j++)
-        for (int k = 0; k < _gridSize.z; k++)
-            improvements[i, j, k] = -1f;
-        MeshVoxelizer.ApplySmoothing(ref res.Improvements, ref improvements, _gridSize);
-        voxelBuffer.SetData(improvements);
-        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
-        BuildMesh();
-        var impVisualizer = Instantiate(improvementsVisualizer, transform, false);
-        impVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
 
         // Visualize carved area
         float[,,] carvedArea = new float[_gridSize.x, _gridSize.y, _gridSize.z];
@@ -380,6 +366,8 @@ public class Tooth : MonoBehaviour
         distVisualizer.sharedMesh = MeshUtils.MakeReadableMeshCopy(_meshFilter.sharedMesh);
 
         // restore tooth mesh
+        voxelUVBuffer.SetData(_voxelUV3D);
+        computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), VoxelUV, voxelUVBuffer);
         voxelBuffer.SetData(voxels);
         computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
         BuildMesh();
@@ -406,6 +394,58 @@ public class Tooth : MonoBehaviour
             "LL7" => 17.0f,
             "LL8" => 14.0f,
             _ => 18f
+        };
+    }
+
+    private ToothEvaluator.ToothParameters LookupToothParameters()
+    {
+        return gameObject.name switch
+        {
+            "LR1" or "LL1" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 0.6f
+            },
+            "LR2" or "LL2" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 0.6f
+            },
+            "LR3" or "LL3" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 0.7f
+            },
+            "LR4" or "LL4" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 0.8f
+            },
+            "LR5" or "LL5" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 1.0f
+            },
+            "LR6" or "LL6" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 1.0f
+            },
+            "LR7" or "LL7" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 1.0f
+            },
+            "LR8" or "LL8" => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 1.0f
+            },
+            _ => new ToothEvaluator.ToothParameters
+            {
+                StartY = (int)(_gridSize.y * 0.7),
+                TargetDistance = 1.0f
+            },
         };
     }
 }
