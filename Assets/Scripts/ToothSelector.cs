@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Controllers;
 using Managers;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -65,6 +66,23 @@ public class ToothSelector : MonoBehaviour
         if (InputModeManager.instance.GetCurrentMode() == InputMode.ToothSelector)
         {
             AnimateHover(cachedTeeth[currentIndex]);
+
+            if (XRModeSwitcher.instance.isXRMode)
+            {
+                if (XRInput.GetDPadRightButton())
+                {
+                    CycleToothForward();
+                }
+                else if (XRInput.GetDPadLeftButton())
+                {
+                    CycleToothBackward();
+                }
+
+                if (XRInput.GetRightAcceptButton())
+                {
+                    Select();
+                }
+            }
         }
     }
 
@@ -113,8 +131,11 @@ public class ToothSelector : MonoBehaviour
             if (i == selectedIndex && tooth.component)
             {
                 tooth.component.enabled = true;
+                tooth.component.isSelected = true;
             }
         }
+        
+        InputModeManager.instance.SetMode(InputMode.Camera);
     }
 
     private void ResetTransform(ToothData tooth)
@@ -134,7 +155,11 @@ public class ToothSelector : MonoBehaviour
     public void Select(InputAction.CallbackContext ctx)
     {
         SelectCurrentTooth();
-        InputModeManager.instance.SetMode(InputMode.Camera);
+    }
+    
+    public void Select()
+    {
+        SelectCurrentTooth();
     }
     
     public void DPad(InputAction.CallbackContext ctx)

@@ -24,11 +24,8 @@ namespace Controllers
         private void Start()
         {
             defaultPosition = transform.localPosition;
-            Debug.Log(transform.localPosition);
             defaultRotation = transform.rotation.eulerAngles;
-            Debug.Log(transform.rotation);
             xRotation = defaultRotation.x;
-            Debug.Log(xRotation);
         }
 
         private void Update()
