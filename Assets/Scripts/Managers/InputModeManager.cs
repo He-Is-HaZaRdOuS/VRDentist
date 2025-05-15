@@ -53,13 +53,13 @@ namespace Managers
         {
             /*Debug.Log(playerInput.currentActionMap.name);*/
 
-            if (XRModeSwitcher.instance.isXRMode)
-            {
-                if (XRInput.GetLeftMenuButton())
-                {
-                    OnRestartScene();
-                }
-            }
+//            if (XRModeSwitcherManager.instance.isXRMode)
+//            {
+//                if (XRInputController.GetLeftMenuButton())
+//                {
+//                    OnRestartScene();
+//                }
+//            }
         }
 
         public void OnToggleControlMode(InputAction.CallbackContext ctx)

@@ -72,7 +72,7 @@ namespace Managers
 
         public void RumblePulse(float lowFreq, float highFreq, float duration, string hand = "none")
         {
-            if (XRModeSwitcher.instance.isXRMode)
+            if (XRModeSwitcherManager.instance.isXRMode)
             {
                 XRBaseController targetController = null;
                 if (hand == "left") targetController = leftController;

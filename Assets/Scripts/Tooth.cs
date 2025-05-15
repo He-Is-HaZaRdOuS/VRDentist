@@ -186,19 +186,19 @@ public class Tooth : MonoBehaviour
             if (_collided)
             {
                 /*Debug.Log("Collided");*/
-                if (XRModeSwitcher.instance.isXRMode)
+                if (XRModeSwitcherManager.instance.isXRMode)
                 {
-                    triggerValue = ToolInputManager.instance.CurrentHoldingHand switch
+                    triggerValue = ToolManager.instance.CurrentHoldingHand switch
                     {
-                        Handedness.Left => ToolInputManager.instance.LeftTriggerValue,
-                        Handedness.Right => ToolInputManager.instance.RightTriggerValue,
+                        Handedness.Left => ToolManager.instance.LeftTriggerValue,
+                        Handedness.Right => ToolManager.instance.RightTriggerValue,
                         _ => 0f
                     };
-                    /*Debug.Log($"CurrentHoldingHand: {ToolInputManager.instance.CurrentHoldingHand}, triggerValue: {triggerValue}");*/
+                    /*Debug.Log($"CurrentHoldingHand: {ToolManager.instance.CurrentHoldingHand}, triggerValue: {triggerValue}");*/
                 }
                 else
                 {
-                    triggerValue = ToolInputManager.instance.RightTriggerValue;
+                    triggerValue = ToolManager.instance.RightTriggerValue;
                     /*Debug.Log(triggerValue);*/
                     //triggerValue = 1.0f; // Dirty quick fix // TODO: Remove this line
                 }

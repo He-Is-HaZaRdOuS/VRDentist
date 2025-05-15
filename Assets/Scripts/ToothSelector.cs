@@ -15,6 +15,8 @@ public class ToothSelector : MonoBehaviour
     [SerializeField] private float floatSpeed = 0.5f;
     [SerializeField] private float floatAmount = 0.05f;
 
+    public bool hasSelected;
+
     private struct ToothData
     {
         public Transform tf;
@@ -65,20 +67,26 @@ public class ToothSelector : MonoBehaviour
     {
         if (InputModeManager.instance.GetCurrentMode() == InputMode.ToothSelector)
         {
+            if (hasSelected)
+            {
+                InputModeManager.instance.SetMode(InputMode.Camera);
+                return;
+            }
+                
             AnimateHover(cachedTeeth[currentIndex]);
 
-            if (XRModeSwitcher.instance.isXRMode)
+            if (XRModeSwitcherManager.instance.isXRMode)
             {
-                if (XRInput.GetDPadRightButton())
+                if (XRInputController.GetDPadRightButton())
                 {
                     CycleToothForward();
                 }
-                else if (XRInput.GetDPadLeftButton())
+                else if (XRInputController.GetDPadLeftButton())
                 {
                     CycleToothBackward();
                 }
 
-                if (XRInput.GetRightAcceptButton())
+                if (XRInputController.GetRightAcceptButton())
                 {
                     Select();
                 }
@@ -134,7 +142,8 @@ public class ToothSelector : MonoBehaviour
                 tooth.component.isSelected = true;
             }
         }
-        
+
+        hasSelected = true;
         InputModeManager.instance.SetMode(InputMode.Camera);
     }
 

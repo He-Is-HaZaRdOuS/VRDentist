@@ -4,7 +4,7 @@ using UnityEngine.XR;
 
 namespace Controllers
 {
-    public static class XRInput
+    public static class XRInputController
     {
         public static float GetLeftTriggerValue()
         {

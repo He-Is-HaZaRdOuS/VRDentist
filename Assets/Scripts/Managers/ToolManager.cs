@@ -1,16 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Managers;
-using UnityEngine.Animations;
+using Controllers;
 
-namespace Controllers
+namespace Managers
 {
     [RequireComponent(typeof(PlayerInput))]
-    public class ToolInputManager : MonoBehaviour
+    public class ToolManager : MonoBehaviour
     {
-        public static ToolInputManager instance;
+        public static ToolManager instance;
 
         [Header("Tool Input")]
         [SerializeField] private List<Aerator> aerators = new List<Aerator>();
@@ -20,25 +20,37 @@ namespace Controllers
         [SerializeField] private Material defaultMaterial;
 
         [Header("Tool Movement")]
-        [SerializeField] private float toolMovementSpeed = 1f;
+        [SerializeField] private float toolMovementSpeed = 2.5f;
+        [SerializeField] private float maxToolMovementSpeed = 5f;
+        
+        [SerializeField] private float movementSmoothTime = 0.05f; // For movement damping
+        [SerializeField] private float rotationSmoothSpeed = 25; // For rotation damping
         
         [Header("Triggers")]
         [SerializeField] public float RightTriggerValue;
         [SerializeField] public float LeftTriggerValue;
 
-        private Camera mainCamera;
+        public Camera mainCamera;
         private List<Renderer> aeratorRenderers = new List<Renderer>();
         private int activeAeratorIndex = 0;
         private int prevActiveIndex = -1;
         private Vector2 rotation;
         private Vector3 movementDirection;
-
+        
+        private Vector3 currentVelocity = Vector3.zero;
+        private Vector3 targetPosition;
+        private Quaternion cameraAlignedRotation;
+        private Quaternion targetRotation;
         
         public Handedness CurrentHoldingHand = Handedness.None;
 
         private void Awake()
         {
             if (instance == null) instance = this;
+        }
+
+        private void OnEnable()
+        {
             mainCamera = Camera.main;
         }
 
@@ -59,18 +71,20 @@ namespace Controllers
 
         private void Update()
         {
-            if (XRModeSwitcher.instance.isXRMode)
+            if (XRModeSwitcherManager.instance.isXRMode)
             {
-                RightTriggerValue = XRInput.GetRightTriggerValue();
-                LeftTriggerValue = XRInput.GetLeftTriggerValue();
+                RightTriggerValue = XRInputController.GetRightTriggerValue();
+                LeftTriggerValue = XRInputController.GetLeftTriggerValue();
                 // TODO: Make `activeAeratorIndex` update when holding a valid aerator in XR mode. currently doesn't switch.
                 CurrentHoldingHand = aerators.Count > 0 ? aerators[activeAeratorIndex].holdingHand : Handedness.None;
 
-                if (XRInput.GetRightMenuButton())
+                if (XRInputController.GetRightMenuButton())
                 {
                     Evaluate();
                 }
             }
+            
+            targetRotation = aerators[activeAeratorIndex].transform.rotation;
         }
 
         private void LateUpdate()
@@ -84,6 +98,9 @@ namespace Controllers
             }
 
             // Movement aligned to camera XZ plane
+            // Movement aligned to camera XZ plane
+            Vector3 targetVelocity = Vector3.zero;
+
             if (movementDirection.x != 0f || movementDirection.z != 0f)
             {
                 Vector3 camF = mainCamera.transform.forward;
@@ -92,20 +109,49 @@ namespace Controllers
                 camF.Normalize(); camR.Normalize();
 
                 Vector3 worldDir = camR * movementDirection.x + camF * movementDirection.z;
-                aerators[activeAeratorIndex].transform.position += worldDir * (toolMovementSpeed * Time.deltaTime);
+                targetVelocity += worldDir;
             }
+
             // Y-axis movement
             if (movementDirection.y != 0f)
             {
-                aerators[activeAeratorIndex].transform.Translate(
-                    Vector3.up * (movementDirection.y * toolMovementSpeed * Time.deltaTime),
-                    Space.World);
+                targetVelocity += Vector3.up * movementDirection.y;
             }
 
-            // Tool rotation (local)
+            // Apply smoothed movement
+            targetVelocity = targetVelocity.normalized * toolMovementSpeed;
+            Vector3 newPos = Vector3.SmoothDamp(
+                aerators[activeAeratorIndex].transform.position,
+                aerators[activeAeratorIndex].transform.position + targetVelocity * Time.deltaTime,
+                ref currentVelocity,
+                movementSmoothTime
+            );
+
+            aerators[activeAeratorIndex].transform.position = newPos;
+
+
+            // Tool rotation
             var activeTrans = aerators[activeAeratorIndex].transform;
-            activeTrans.Rotate(rotation.y * toolMovementSpeed, 0f, 0f, Space.Self);
-            activeTrans.Rotate(0f, 0f, rotation.x * toolMovementSpeed, Space.Self);
+
+            if (rotation != Vector2.zero)
+            {
+                Vector3 camRight = mainCamera.transform.right; // X-axis (pitch)
+                Vector3 camForward = mainCamera.transform.forward; // For Z-axis (roll)
+
+                // Keep rotation on horizontal plane for Z-axis rotation
+                camForward.y = 0f;
+                camForward.Normalize();
+
+                // Input: rotation.y = pitch (X), rotation.x = roll (Z)
+                Quaternion deltaPitch = Quaternion.AngleAxis(rotation.y * toolMovementSpeed, camRight);
+                Quaternion deltaRoll = Quaternion.AngleAxis(-rotation.x * toolMovementSpeed, camForward);
+
+                // Only apply X (pitch) and Z (roll)
+                targetRotation = deltaRoll * deltaPitch * targetRotation;
+            }
+
+            // Smooth toward target rotation
+            activeTrans.rotation = Quaternion.Slerp(activeTrans.rotation, targetRotation, rotationSmoothSpeed * Time.deltaTime);
         }
 
         private void UpdateActiveVisual()
@@ -179,7 +225,7 @@ namespace Controllers
         {
             float raw = ctx.ReadValue<float>();
             LeftTriggerValue = 1f - raw;
-            toolMovementSpeed = LeftTriggerValue;
+            toolMovementSpeed = LeftTriggerValue * maxToolMovementSpeed;
         }
 
         public void Evaluate(InputAction.CallbackContext ctx)
@@ -219,7 +265,7 @@ namespace Controllers
         {
             activeAeratorIndex = (activeAeratorIndex - 1 + aerators.Count) % aerators.Count;
         }
-        public void IncrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, 1f);
-        public void DecrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, 1f);
+        public void IncrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, maxToolMovementSpeed);
+        public void DecrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, maxToolMovementSpeed);
     }
 }
