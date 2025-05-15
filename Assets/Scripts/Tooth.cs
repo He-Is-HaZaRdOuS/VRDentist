@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using Managers;
 using Controllers;
@@ -67,6 +68,13 @@ public class Tooth : MonoBehaviour
 
     public void Start()
     {
+        StartCoroutine(VoxelizeMesh());
+    }
+
+    private IEnumerator VoxelizeMesh()
+    {
+        UIManager.Instance.ShowLoadingWindow("Loading");
+        yield return null;
         // adjust pivot
         transform.position += _meshFilter.mesh.bounds.center * transform.lossyScale.x;
         /*Debug.Log($"transform.lossyScale.x: {transform.lossyScale.x}");*/
@@ -147,20 +155,22 @@ public class Tooth : MonoBehaviour
         // Initialize mesh builder and build initial mesh
         builder = new MeshBuilder(_gridSize, 1000000, computeShader);
         BuildMesh();
+        UIManager.Instance.HideLoadingWindow();
     }
 
     private bool _done = false;
 
     public void Evaluate()
     {
+        if (_done) return;
         _done = true;
-        evaluate();
+        StartCoroutine(evaluate());
     }
 
     public void FixedUpdate()
     {
         if (_done) return;
-        
+
         foreach (var aerator in _aerators)
         {
             switch (aerator.AeratorType)
@@ -320,8 +330,10 @@ public class Tooth : MonoBehaviour
         // Debug.Log($"Exported mesh .obj to {objPath}");
     }
 
-    private void evaluate()
+    private IEnumerator evaluate()
     {
+        UIManager.Instance.ShowLoadingWindow("Analyzing");
+        yield return null;
         // Get voxels & evaluate
         float[,,] voxels = new float[_gridSize.x, _gridSize.y, _gridSize.z];
         voxelBuffer.GetData(voxels, 0, 0, _gridSize.x * _gridSize.y * _gridSize.z);
@@ -372,6 +384,12 @@ public class Tooth : MonoBehaviour
         voxelBuffer.SetData(voxels);
         computeShader.SetBuffer(computeShader.FindKernel("MeshReconstruction"), Voxels, voxelBuffer);
         BuildMesh();
+        UIManager.Instance.HideLoadingWindow();
+        UIManager.Instance.CarvedVisualizer = carveVisualizer.gameObject;
+        UIManager.Instance.UndercutVisualizer = errVisualizer.gameObject;
+        UIManager.Instance.DistanceVisualizer = distVisualizer.gameObject;
+        UIManager.Instance.ShowEvaluationWindow();
+        InputModeManager.instance.OnEnterExitUINavigation(); // Hit the select key from code 
     }
 
     private float LookupToothHeightInMillimeters()
