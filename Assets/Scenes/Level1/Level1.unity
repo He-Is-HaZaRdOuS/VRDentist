@@ -1324,6 +1324,26 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 98ffef57-b841-4364-a68f-6ebf1b1939fb
     m_ActionName: Global/RestartScene[/Gamepad/buttonWest]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 78bbd293-619d-4de2-ab14-4b0ed38251c2
+    m_ActionName: ToolMap/Evaluate[/Gamepad/buttonSouth]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: be6dca9c-8c12-4e1a-93ae-e62904aec157
+    m_ActionName: Global/EnterExitUI[/Keyboard/tab,/Gamepad/select]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 93cce937-90e6-4d31-911a-a0952adfe527
+    m_ActionName: UINavigationMap/Next[/Keyboard/downArrow,/Gamepad/leftStick/down]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 6ec7652a-2f03-482d-905f-b7a31250102e
+    m_ActionName: UINavigationMap/Prev[/Keyboard/upArrow,/Gamepad/leftStick/up]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 97ea8f09-6874-44b9-9351-e7b7a71bc528
+    m_ActionName: UINavigationMap/Select[/Keyboard/enter,/Gamepad/buttonSouth]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: CameraMap
@@ -1345,6 +1365,8 @@ MonoBehaviour:
   sensitivity: 50
   maxMoveSpeed: 10
   moveSpeed: 5
+  positionSmoothTime: 0.05
+  rotationSmoothTime: 0.05
 --- !u!1001 &547803090
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2314,9 +2336,13 @@ MonoBehaviour:
   aerators: []
   activeMaterial: {fileID: 2100000, guid: 02d4a84cd387f3644ae11aaacb52dd30, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 02d4a84cd387f3644ae11aaacb52dd30, type: 2}
-  toolMovementSpeed: 1
+  toolMovementSpeed: 2.5
+  maxToolMovementSpeed: 5
+  movementSmoothTime: 0.05
+  rotationSmoothSpeed: 25
   RightTriggerValue: 0
   LeftTriggerValue: 0
+  mainCamera: {fileID: 0}
   CurrentHoldingHand: 0
 --- !u!4 &803642039
 Transform:
@@ -2462,6 +2488,7 @@ MonoBehaviour:
   transparentMat: {fileID: 2100000, guid: 88cf7a9e7eb904279bcda07d331d9d90, type: 2}
   floatSpeed: 0.5
   floatAmount: 1
+  hasSelected: 0
 --- !u!1 &939278240
 GameObject:
   m_ObjectHideFlags: 0

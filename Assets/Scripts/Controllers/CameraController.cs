@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Managers;
 
 namespace Controllers
 {
@@ -18,47 +20,62 @@ namespace Controllers
         private Vector3 defaultPosition;
         private Vector3 defaultRotation;
         
+        [SerializeField] private float positionSmoothTime = 0.05f;
+        private Vector3 currentVelocity; // For SmoothDamp movement
+        private Vector3 targetPosition;  // Where we want to move
+        
+        [SerializeField] private float rotationSmoothTime = 0.05f;
+        private float targetYaw;
+        private float targetPitch;
+        private float smoothYawVelocity;
+        private float smoothPitchVelocity;
+        
         public float RightTriggerValue { get; private set; }
         public float LeftTriggerValue { get; private set; }
+        
 
-        private void Start()
+        private void OnEnable()
         {
             defaultPosition = transform.localPosition;
             defaultRotation = transform.rotation.eulerAngles;
             xRotation = defaultRotation.x;
+            
+            targetPitch = defaultRotation.x;
+            targetYaw = defaultRotation.y;
+            targetPosition = transform.position;
+            
+            ToolManager.instance.mainCamera = Camera.main;
         }
 
         private void Update()
         {
             if (Cursor.lockState != CursorLockMode.Locked)
-            {
                 return;
-            }
 
-            float yaw = lookInput.x * Time.deltaTime;
-            float pitch = -lookInput.y * Time.deltaTime;
+            // Apply look input to target rotation values
+            targetYaw += lookInput.x * Time.deltaTime;
+            targetPitch -= lookInput.y * Time.deltaTime;
+            targetPitch = Mathf.Clamp(targetPitch, -90f, 90f);
 
-            // Update vertical angle and clamp it
-            xRotation += pitch;
-            xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+            // Smooth current rotation values
+            xRotation = Mathf.SmoothDamp(xRotation, targetPitch, ref smoothPitchVelocity, rotationSmoothTime);
+            float smoothYaw = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetYaw, ref smoothYawVelocity, rotationSmoothTime);
 
             // Apply rotations
-            // Set the local X rotation explicitly using verticalAngle (clamped pitch)
-            transform.localRotation = Quaternion.Euler(xRotation, transform.localRotation.eulerAngles.y, 0);
+            transform.localRotation = Quaternion.Euler(xRotation, smoothYaw, 0f);
 
-            // Apply yaw (horizontal rotation)
-            transform.Rotate(0, yaw, 0, Space.World);
-
-            // Calculate movement direction
+            // Compute movement vector in local camera space
             Vector3 forward = transform.forward * movementDirection.z;
             Vector3 right = transform.right * movementDirection.x;
+            Vector3 vertical = Vector3.up * movementDirection.y;
 
-            // Move the camera horizontally
-            Vector3 movement = (forward + right) * (moveSpeed * Time.deltaTime);
-            transform.position += movement;
+            Vector3 rawMove = (forward + right + vertical) * (moveSpeed * Time.deltaTime);
 
-            // Apply vertical movement (Q/E for up/down)
-            transform.Translate(Vector3.up * (movementDirection.y * moveSpeed * Time.deltaTime), Space.World);
+            // Update target position
+            targetPosition += rawMove;
+
+            // Smoothly move camera to target position
+            transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref currentVelocity, positionSmoothTime);
         }
 
         // Look method for mouse input
@@ -123,6 +140,13 @@ namespace Controllers
         {
             Debug.Log("Reset Camera");
             transform.SetLocalPositionAndRotation(defaultPosition, Quaternion.Euler(defaultRotation));
+            
+            // Reset smoothing targets to avoid jitter
+            targetPosition = defaultPosition;
+            xRotation = defaultRotation.x;
+            targetPitch = defaultRotation.x;
+            targetYaw = defaultRotation.y;
+            targetPosition = transform.position;
         }
         
         public void IncrementMovementSpeed() => moveSpeed = Mathf.Clamp(moveSpeed + 0.5f, 0.5f, maxMoveSpeed);

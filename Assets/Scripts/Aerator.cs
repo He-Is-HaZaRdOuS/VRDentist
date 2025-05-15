@@ -1,8 +1,7 @@
-using Controllers;
-using TMPro.EditorUtilities;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
+using Managers;
 
 public enum Handedness { None, Left, Right }
 
@@ -15,9 +14,9 @@ public class Aerator : MonoBehaviour
     
     private void Awake()
     {
-        if (ToolInputManager.instance != null)
+        if (ToolManager.instance != null)
         {
-            ToolInputManager.instance.RegisterAerator(this);
+            ToolManager.instance.RegisterAerator(this);
         }
     }
 
@@ -29,9 +28,9 @@ public class Aerator : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (ToolInputManager.instance != null)
+        if (ToolManager.instance != null)
         {
-            ToolInputManager.instance.UnregisterAerator(this);
+            ToolManager.instance.UnregisterAerator(this);
         }
     }
     
@@ -55,12 +54,12 @@ public class Aerator : MonoBehaviour
         if (controllerTag == "HandLeft")
         {
             holdingHand = Handedness.Left;
-            ToolInputManager.instance.SetActiveAerator(index);
+            ToolManager.instance.SetActiveAerator(index);
         }
         else if (controllerTag == "HandRight")
         {
             holdingHand = Handedness.Right;
-            ToolInputManager.instance.SetActiveAerator(index);
+            ToolManager.instance.SetActiveAerator(index);
         }
     }
 
