@@ -4,7 +4,6 @@
 
 ### Eagle Camera
 
-##### Controller
 - **LeftTrigger**: Inversely proportional to the movement speed of the camera
 - **RightTrigger**: Inversely proportional to the look sensitivity of the camera
 - **LeftBumper**: Move camera on the negative Y axis
