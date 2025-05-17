@@ -265,7 +265,7 @@ namespace Managers
         {
             activeAeratorIndex = (activeAeratorIndex - 1 + aerators.Count) % aerators.Count;
         }
-        public void IncrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 0.1f, 0.1f, maxToolMovementSpeed);
-        public void DecrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 0.1f, 0.1f, maxToolMovementSpeed);
+        public void IncrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed + 1f, 0.1f, maxToolMovementSpeed);
+        public void DecrementMovementSpeed() => toolMovementSpeed = Mathf.Clamp(toolMovementSpeed - 1f, 0.1f, maxToolMovementSpeed);
     }
 }
