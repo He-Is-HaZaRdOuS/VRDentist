@@ -2337,7 +2337,7 @@ MonoBehaviour:
   activeMaterial: {fileID: 2100000, guid: 02d4a84cd387f3644ae11aaacb52dd30, type: 2}
   defaultMaterial: {fileID: 2100000, guid: 02d4a84cd387f3644ae11aaacb52dd30, type: 2}
   toolMovementSpeed: 2.5
-  maxToolMovementSpeed: 5
+  maxToolMovementSpeed: 10
   movementSmoothTime: 0.05
   rotationSmoothSpeed: 25
   RightTriggerValue: 0
@@ -3478,7 +3478,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1305100348
 Transform:
   m_ObjectHideFlags: 0

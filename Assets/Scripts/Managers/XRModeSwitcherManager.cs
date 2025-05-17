@@ -25,7 +25,7 @@ namespace Managers
 
         void Start()
         {
-            if (isXRMode)
+            /*if (isXRMode)
             {
                 xrEnabled = !xrEnabled;
                 SwitchToXR();
@@ -34,7 +34,7 @@ namespace Managers
             {
                 xrEnabled = !xrEnabled;
                 SwitchTo2D();
-            }
+            }*/
         }
 
         void Update()
