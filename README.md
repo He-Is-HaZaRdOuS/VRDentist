@@ -3,11 +3,6 @@
 ## Controls
 
 ### Eagle Camera
-##### Keyboard & Mouse
-- **Space**: Lock cursor/Activate camera
-- **WSAD**: Move
-- **EQ**: Move up and down
-- **Mouse**: Look around
 
 ##### Controller
 - **LeftTrigger**: Inversely proportional to the movement speed of the camera
@@ -21,8 +16,9 @@
 - **UpDPad**: Increment Speed
 - **DownDPad**: Decrement Speed
 - **StartButton**: Lock cursor/Activate camera
-- **WestButton**: Reset camera transform to default
-- **EastButton**: Manually save voxel cache
+- **MenuButton**: Toggle UI
+- **WestButton**: Restart Level
+- **EastButton**: Reset camera transform to default
 - **NorthButton**: Toggle input modes
 
 ![Xbox Controller Layout](XBox_One_Controls_VRDenstist_Camera.png)
@@ -38,8 +34,10 @@
 - **RightDPad**: Cycle tool index forwards
 - **UpDPad**: Increment Speed
 - **DownDPad**: Decrement Speed
-- **WestButton**: Reset tool transform to default
-- **EastButton**: Manually save voxel cache
+- **MenuButton**: Toggle UI
+- **WestButton**: Restart Level
+- **EastButton**: Reset tool transform to default
 - **NorthButton**: Toggle input modes
+- **SouthButton**: Evaluate carving margin
 
 ![Xbox Controller Layout](XBox_One_Controls_VRDenstist_Tool.png)
